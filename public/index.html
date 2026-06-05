@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reading List</title>
-    <link rel="stylesheet" href="styles.css?v=6" />
+    <link rel="stylesheet" href="styles.css?v=7" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
   </head>
   <body>
@@ -93,6 +93,20 @@
         <p id="count" class="count"></p>
         <p class="sort-hint">Click a column heading to sort; click it again to reverse.</p>
 
+        <div class="mobile-sort">
+          <label for="m-sort">Sort by</label>
+          <select id="m-sort">
+            <option value="date">Date</option>
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="type">Type</option>
+            <option value="rating">Rating</option>
+          </select>
+          <button id="m-order" type="button" aria-label="Toggle sort direction">
+            <span id="m-order-icon">↓</span>
+          </button>
+        </div>
+
         <div class="table-wrap">
           <table id="book-table" class="book-table">
             <thead>
@@ -113,6 +127,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=5" type="module"></script>
+    <script src="app.js?v=7" type="module"></script>
   </body>
 </html>

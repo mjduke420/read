@@ -18,6 +18,9 @@ const els = {
   detailDesc: document.querySelector('#detail .detail-desc'),
   detailClose: document.querySelector('#detail .detail-close'),
   detailDelete: document.querySelector('#detail .detail-delete'),
+  mSort: document.getElementById('m-sort'),
+  mOrder: document.getElementById('m-order'),
+  mOrderIcon: document.getElementById('m-order-icon'),
 };
 
 // UI state. Always replaced, never mutated in place.
@@ -85,13 +88,14 @@ function row(book) {
   const tr = document.createElement('tr');
   tr.dataset.id = book.id;
   if (book.id === selectedId) tr.classList.add('selected');
+  // data-label values surface as field labels in the mobile card layout.
   tr.innerHTML = `
     <td class="col-title"></td>
-    <td class="col-author"></td>
-    <td class="col-type"><span class="type-badge"></span></td>
-    <td class="col-date"></td>
-    <td class="col-rating"></td>
-    <td class="col-desc"><div class="desc-clamp"></div></td>
+    <td class="col-author" data-label="Author"></td>
+    <td class="col-type" data-label="Type"><span class="type-badge"></span></td>
+    <td class="col-date" data-label="Date"></td>
+    <td class="col-rating" data-label="Rating"></td>
+    <td class="col-desc" data-label="Description"><div class="desc-clamp"></div></td>
     <td class="col-actions"><button class="row-delete" title="Delete" aria-label="Delete book">✕</button></td>
   `;
 
@@ -158,7 +162,8 @@ function highlight() {
   }
 }
 
-// Reflect the current sort key/direction in the column headers.
+// Reflect the current sort key/direction in the column headers and the
+// mobile sort control (kept in sync so either entry point works).
 function updateHeaders() {
   for (const th of els.headers) {
     const active = th.dataset.key === state.sort;
@@ -167,6 +172,8 @@ function updateHeaders() {
     if (arrow) arrow.textContent = state.order === 'asc' ? '↑' : '↓';
     th.setAttribute('aria-sort', active ? (state.order === 'asc' ? 'ascending' : 'descending') : 'none');
   }
+  els.mSort.value = state.sort;
+  els.mOrderIcon.textContent = state.order === 'asc' ? '↑' : '↓';
 }
 
 async function remove(book) {
@@ -182,6 +189,16 @@ async function remove(book) {
 }
 
 els.detailClose.addEventListener('click', closeDetail);
+
+// Mobile sort control (mirrors the desktop header-click sorting).
+els.mSort.addEventListener('change', () => {
+  setState({ sort: els.mSort.value });
+  load();
+});
+els.mOrder.addEventListener('click', () => {
+  setState({ order: state.order === 'asc' ? 'desc' : 'asc' });
+  load();
+});
 
 // Click a column heading to sort by it; click the active one again to flip.
 for (const th of els.headers) {
