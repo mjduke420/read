@@ -1,0 +1,24 @@
+services:
+  reads:
+    build: .
+    image: reads:latest
+    container_name: reads
+    restart: unless-stopped
+    ports:
+      # host:container — change the left side if 3000 is taken on your host
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - BOOKS_CSV=/data/books.csv
+    volumes:
+      # Named volume keeps books.csv across rebuilds/restarts
+      - reads_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/books"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  reads_data:
