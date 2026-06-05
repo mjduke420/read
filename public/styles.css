@@ -11,10 +11,41 @@
   --star: #ffc857;
   --radius: 12px;
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  --scrollbar-thumb: #353b4d;
+  --scrollbar-thumb-hover: #454d63;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Dark, modern scrollbars ----------------------------------------------- */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+/* WebKit / Chromium / Edge */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 8px;
+  /* transparent border + clip leaves breathing room around the thumb */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 body {
