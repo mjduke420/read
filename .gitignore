@@ -1,0 +1,13 @@
+node_modules/
+npm-debug.log*
+
+# Runtime data — the live reading list lives here and should not be committed.
+# The bundled data/books.seed.csv (tracked) seeds it on first run.
+data/books.csv
+*.tmp
+
+.env
+.DS_Store
+
+# Local Claude Code settings
+.claude/

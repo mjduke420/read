@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reading List</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>📚 Reading List</h1>
+      <p class="subtitle">Your books, in one place.</p>
+    </header>
+
+    <main class="layout">
+      <section class="panel form-panel">
+        <h2>Add a book</h2>
+        <form id="add-form" autocomplete="off" novalidate>
+          <label>
+            Title <span class="req">*</span>
+            <input type="text" name="title" maxlength="500" required />
+          </label>
+          <label>
+            Author <span class="req">*</span>
+            <input type="text" name="author" maxlength="300" required />
+          </label>
+          <div class="row">
+            <label>
+              Date
+              <input type="date" name="date" />
+            </label>
+            <label>
+              Rating
+              <select name="rating">
+                <option value="">Unrated</option>
+                <option value="1">★☆☆☆☆ (1)</option>
+                <option value="2">★★☆☆☆ (2)</option>
+                <option value="3">★★★☆☆ (3)</option>
+                <option value="4">★★★★☆ (4)</option>
+                <option value="5">★★★★★ (5)</option>
+              </select>
+            </label>
+          </div>
+          <label>
+            Description
+            <textarea name="description" rows="4" maxlength="5000"></textarea>
+          </label>
+          <button type="submit" class="primary">Add book</button>
+          <p id="form-msg" class="form-msg" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="controls">
+          <input
+            type="search"
+            id="search"
+            class="search"
+            placeholder="Search title, author or description…"
+            aria-label="Search books"
+          />
+          <div class="sort-controls">
+            <label>
+              Sort by
+              <select id="sort">
+                <option value="date">Date</option>
+                <option value="title">Title</option>
+                <option value="author">Author</option>
+                <option value="rating">Rating</option>
+              </select>
+            </label>
+            <button id="order" class="ghost" type="button" aria-label="Toggle sort direction">
+              <span id="order-icon">↓</span>
+            </button>
+          </div>
+        </div>
+
+        <p id="count" class="count"></p>
+        <div id="grid" class="grid" aria-live="polite"></div>
+        <p id="empty" class="empty hidden">No books yet. Add your first one!</p>
+      </section>
+    </main>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>

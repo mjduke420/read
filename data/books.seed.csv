@@ -1,0 +1,4 @@
+id,title,author,date,rating,description
+b1a7c2e0-0001-4a00-8000-000000000001,The Pragmatic Programmer,"Andrew Hunt, David Thomas",2024-01-15,5,"A classic on practical software craftsmanship. Covers everything from DRY to the broken-windows theory."
+b1a7c2e0-0002-4a00-8000-000000000002,Project Hail Mary,Andy Weir,2024-03-02,5,"A lone astronaut wakes up with amnesia and has to save humanity. Funny, clever, and full of heart."
+b1a7c2e0-0003-4a00-8000-000000000003,Designing Data-Intensive Applications,Martin Kleppmann,2024-05-20,4,"The definitive guide to the architecture of modern data systems."

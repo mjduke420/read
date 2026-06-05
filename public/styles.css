@@ -1,0 +1,251 @@
+:root {
+  --bg: #0f1117;
+  --panel: #1a1d27;
+  --panel-2: #232735;
+  --border: #2e3344;
+  --text: #e7e9ee;
+  --muted: #9aa0b0;
+  --accent: #6d8bff;
+  --accent-strong: #5470e6;
+  --danger: #ff6b6b;
+  --star: #ffc857;
+  --radius: 12px;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(1200px 600px at 70% -10%, #1b2030 0%, var(--bg) 60%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.topbar {
+  padding: 28px 24px 8px;
+  text-align: center;
+}
+.topbar h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 880px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.form-panel {
+  position: sticky;
+  top: 24px;
+}
+.panel h2 {
+  margin-top: 0;
+  font-size: 1.15rem;
+}
+
+form label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.req {
+  color: var(--accent);
+}
+.row {
+  display: flex;
+  gap: 12px;
+}
+.row label {
+  flex: 1;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(109, 139, 255, 0.2);
+}
+textarea {
+  resize: vertical;
+}
+
+button {
+  cursor: pointer;
+  font: inherit;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: filter 0.15s ease, background 0.15s ease;
+}
+button.primary {
+  width: 100%;
+  padding: 11px;
+  background: var(--accent-strong);
+  color: white;
+  font-weight: 600;
+  margin-top: 4px;
+}
+button.primary:hover {
+  filter: brightness(1.1);
+}
+button.ghost {
+  background: var(--panel-2);
+  border-color: var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  min-width: 40px;
+}
+button.ghost:hover {
+  border-color: var(--accent);
+}
+
+.form-msg {
+  margin: 10px 0 0;
+  min-height: 1.2em;
+  font-size: 0.85rem;
+}
+.form-msg.error {
+  color: var(--danger);
+}
+.form-msg.success {
+  color: #5fd38d;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+.search {
+  flex: 1;
+  min-width: 200px;
+}
+.sort-controls {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.sort-controls label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.sort-controls select {
+  width: auto;
+}
+
+.count {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+.card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  padding-right: 24px;
+}
+.card .author {
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+.card .meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.card .stars {
+  color: var(--star);
+  letter-spacing: 1px;
+}
+.card .desc {
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.card .delete {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 2px 6px;
+}
+.card .delete:hover {
+  color: var(--danger);
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 40px;
+}
+.hidden {
+  display: none;
+}

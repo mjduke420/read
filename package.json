@@ -1,0 +1,24 @@
+{
+  "name": "reads",
+  "version": "1.0.0",
+  "description": "A self-hostable Reading List web app backed by a CSV file.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "csv-parse": "^5.5.6",
+    "csv-stringify": "^6.5.0",
+    "express": "^4.19.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}
