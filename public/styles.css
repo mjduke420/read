@@ -163,43 +163,120 @@ button.ghost:hover {
   flex: 1;
   min-width: 200px;
 }
-.sort-controls {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-.sort-controls label {
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-.sort-controls select {
-  width: auto;
-}
-
 .count {
   color: var(--muted);
   font-size: 0.85rem;
+  margin: 0 0 4px;
+}
+.sort-hint {
+  color: var(--muted);
+  font-size: 0.78rem;
   margin: 0 0 12px;
+  opacity: 0.8;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-}
-
-.card {
-  background: var(--panel-2);
+.table-wrap {
+  overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
 }
-.card .type-badge {
-  align-self: flex-start;
+
+.book-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 680px;
+}
+
+.book-table thead th {
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.book-table th[data-key] {
+  cursor: pointer;
+  user-select: none;
+}
+.book-table th[data-key]:hover {
+  color: var(--text);
+}
+.book-table th.sorted {
+  color: var(--accent);
+}
+.book-table th .arrow {
+  font-size: 0.7rem;
+  opacity: 0;
+}
+.book-table th.sorted .arrow {
+  opacity: 1;
+}
+
+.book-table tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.book-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.book-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.col-title {
+  font-weight: 600;
+  color: var(--text);
+}
+.col-author {
+  color: var(--accent);
+  white-space: nowrap;
+}
+.col-date {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.col-rating {
+  color: var(--star);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.col-rating .unrated {
+  color: var(--muted);
+  letter-spacing: normal;
+}
+.col-desc {
+  max-width: 360px;
+}
+.desc-clamp {
+  color: var(--muted);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.col-actions {
+  text-align: right;
+}
+
+.type-badge {
+  display: inline-block;
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--accent);
@@ -207,48 +284,18 @@ button.ghost:hover {
   border: 1px solid rgba(109, 139, 255, 0.3);
   padding: 2px 8px;
   border-radius: 999px;
-  margin-right: 24px;
+  white-space: nowrap;
 }
-.card h3 {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.3;
-  padding-right: 24px;
-}
-.card .author {
-  color: var(--accent);
-  font-size: 0.9rem;
-}
-.card .meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-.card .stars {
-  color: var(--star);
-  letter-spacing: 1px;
-}
-.card .desc {
-  color: var(--text);
-  font-size: 0.88rem;
-  line-height: 1.45;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.card .delete {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+
+.row-delete {
   background: transparent;
   color: var(--muted);
   border: none;
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1;
   padding: 2px 6px;
 }
-.card .delete:hover {
+.row-delete:hover {
   color: var(--danger);
 }
 

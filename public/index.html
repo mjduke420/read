@@ -65,28 +65,30 @@
             type="search"
             id="search"
             class="search"
-            placeholder="Search title, author or description…"
+            placeholder="Search title, author, type or description…"
             aria-label="Search books"
           />
-          <div class="sort-controls">
-            <label>
-              Sort by
-              <select id="sort">
-                <option value="date">Date</option>
-                <option value="title">Title</option>
-                <option value="author">Author</option>
-                <option value="rating">Rating</option>
-                <option value="type">Type</option>
-              </select>
-            </label>
-            <button id="order" class="ghost" type="button" aria-label="Toggle sort direction">
-              <span id="order-icon">↓</span>
-            </button>
-          </div>
         </div>
 
         <p id="count" class="count"></p>
-        <div id="grid" class="grid" aria-live="polite"></div>
+        <p class="sort-hint">Click a column heading to sort; click it again to reverse.</p>
+
+        <div class="table-wrap">
+          <table id="book-table" class="book-table">
+            <thead>
+              <tr>
+                <th data-key="title" scope="col">Title <span class="arrow"></span></th>
+                <th data-key="author" scope="col">Author <span class="arrow"></span></th>
+                <th data-key="type" scope="col">Type <span class="arrow"></span></th>
+                <th data-key="date" scope="col">Date <span class="arrow"></span></th>
+                <th data-key="rating" scope="col">Rating <span class="arrow"></span></th>
+                <th scope="col">Description</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="tbody" aria-live="polite"></tbody>
+          </table>
+        </div>
         <p id="empty" class="empty hidden">No books yet. Add your first one!</p>
       </section>
     </main>

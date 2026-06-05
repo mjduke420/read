@@ -4,20 +4,25 @@ const els = {
   form: document.getElementById('add-form'),
   formMsg: document.getElementById('form-msg'),
   search: document.getElementById('search'),
-  sort: document.getElementById('sort'),
-  order: document.getElementById('order'),
-  orderIcon: document.getElementById('order-icon'),
-  grid: document.getElementById('grid'),
+  table: document.getElementById('book-table'),
+  tbody: document.getElementById('tbody'),
   count: document.getElementById('count'),
   empty: document.getElementById('empty'),
+  headers: document.querySelectorAll('#book-table th[data-key]'),
 };
 
-// UI state. Kept immutable-ish: we always replace, never mutate in place.
+// UI state. Always replaced, never mutated in place.
 let state = { search: '', sort: 'date', order: 'desc' };
 
 function setState(patch) {
   state = { ...state, ...patch };
 }
+
+const TYPE_LABELS = {
+  book: '📖 Book',
+  ebook: '📱 eBook',
+  audiobook: '🎧 Audiobook',
+};
 
 async function load() {
   const params = new URLSearchParams({
@@ -31,59 +36,66 @@ async function load() {
     if (!body.success) throw new Error(body.error || 'Failed to load books');
     render(body.data);
   } catch (err) {
-    els.grid.innerHTML = '';
+    els.tbody.innerHTML = '';
     els.count.textContent = `Could not load books: ${err.message}`;
   }
+  updateHeaders();
 }
 
 function render(books) {
-  els.grid.innerHTML = '';
-  els.empty.classList.toggle('hidden', books.length > 0);
+  els.tbody.innerHTML = '';
+  const isEmpty = books.length === 0;
+  els.empty.classList.toggle('hidden', !isEmpty);
+  els.table.classList.toggle('hidden', isEmpty);
   els.count.textContent = books.length === 1 ? '1 book' : `${books.length} books`;
   for (const book of books) {
-    els.grid.appendChild(card(book));
+    els.tbody.appendChild(row(book));
   }
 }
 
-function card(book) {
-  const el = document.createElement('article');
-  el.className = 'card';
-
-  const stars =
-    book.rating == null
-      ? '<span class="meta-muted">Unrated</span>'
-      : `<span class="stars" title="${book.rating}/5">${'★'.repeat(book.rating)}${'☆'.repeat(5 - book.rating)}</span>`;
-
-  const types = {
-    book: '📖 Book',
-    ebook: '📱 eBook',
-    audiobook: '🎧 Audiobook',
-  };
-  const typeLabel = types[book.type] ?? types.book;
-
-  el.innerHTML = `
-    <button class="delete" title="Delete" aria-label="Delete book">✕</button>
-    <span class="type-badge"></span>
-    <h3></h3>
-    <div class="author"></div>
-    <div class="meta">
-      <span class="date"></span>
-      ${stars}
-    </div>
-    <div class="desc"></div>
+function row(book) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="col-title"></td>
+    <td class="col-author"></td>
+    <td class="col-type"><span class="type-badge"></span></td>
+    <td class="col-date"></td>
+    <td class="col-rating"></td>
+    <td class="col-desc"><div class="desc-clamp"></div></td>
+    <td class="col-actions"><button class="row-delete" title="Delete" aria-label="Delete book">✕</button></td>
   `;
-  el.querySelector('.type-badge').textContent = typeLabel;
 
-  // Set user content via textContent to avoid any HTML injection.
-  el.querySelector('h3').textContent = book.title;
-  el.querySelector('.author').textContent = book.author;
-  el.querySelector('.date').textContent = book.date || '';
-  const desc = el.querySelector('.desc');
-  desc.textContent = book.description || '';
-  if (!book.description) desc.remove();
+  // User content goes through textContent to avoid any HTML injection.
+  tr.querySelector('.col-title').textContent = book.title;
+  tr.querySelector('.col-author').textContent = book.author;
+  tr.querySelector('.type-badge').textContent = TYPE_LABELS[book.type] ?? TYPE_LABELS.book;
+  tr.querySelector('.col-date').textContent = book.date || '';
 
-  el.querySelector('.delete').addEventListener('click', () => remove(book));
-  return el;
+  const rating = tr.querySelector('.col-rating');
+  if (book.rating == null) {
+    rating.innerHTML = '<span class="unrated">—</span>';
+  } else {
+    rating.textContent = '★'.repeat(book.rating) + '☆'.repeat(5 - book.rating);
+    rating.title = `${book.rating}/5`;
+  }
+
+  const descCell = tr.querySelector('.col-desc');
+  descCell.querySelector('.desc-clamp').textContent = book.description || '';
+  if (book.description) descCell.title = book.description; // full text on hover
+
+  tr.querySelector('.row-delete').addEventListener('click', () => remove(book));
+  return tr;
+}
+
+// Reflect the current sort key/direction in the column headers.
+function updateHeaders() {
+  for (const th of els.headers) {
+    const active = th.dataset.key === state.sort;
+    th.classList.toggle('sorted', active);
+    const arrow = th.querySelector('.arrow');
+    if (arrow) arrow.textContent = state.order === 'asc' ? '↑' : '↓';
+    th.setAttribute('aria-sort', active ? (state.order === 'asc' ? 'ascending' : 'descending') : 'none');
+  }
 }
 
 async function remove(book) {
@@ -96,6 +108,19 @@ async function remove(book) {
   } catch (err) {
     alert(`Could not delete: ${err.message}`);
   }
+}
+
+// Click a column heading to sort by it; click the active one again to flip.
+for (const th of els.headers) {
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    if (state.sort === key) {
+      setState({ order: state.order === 'asc' ? 'desc' : 'asc' });
+    } else {
+      setState({ sort: key, order: 'asc' });
+    }
+    load();
+  });
 }
 
 els.form.addEventListener('submit', async (e) => {
@@ -132,19 +157,4 @@ els.search.addEventListener('input', () => {
   }, 200);
 });
 
-els.sort.addEventListener('change', () => {
-  setState({ sort: els.sort.value });
-  load();
-});
-
-els.order.addEventListener('click', () => {
-  const order = state.order === 'asc' ? 'desc' : 'asc';
-  setState({ order });
-  els.orderIcon.textContent = order === 'asc' ? '↑' : '↓';
-  load();
-});
-
-// Initialize control defaults from state, then load.
-els.sort.value = state.sort;
-els.orderIcon.textContent = state.order === 'asc' ? '↑' : '↓';
 load();
