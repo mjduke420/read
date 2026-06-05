@@ -9,10 +9,20 @@ const els = {
   count: document.getElementById('count'),
   empty: document.getElementById('empty'),
   headers: document.querySelectorAll('#book-table th[data-key]'),
+  detail: document.getElementById('detail'),
+  detailType: document.querySelector('#detail .detail-type'),
+  detailTitle: document.querySelector('#detail .detail-title'),
+  detailAuthor: document.querySelector('#detail .detail-author'),
+  detailDate: document.querySelector('#detail .detail-date'),
+  detailRating: document.querySelector('#detail .detail-rating'),
+  detailDesc: document.querySelector('#detail .detail-desc'),
+  detailClose: document.querySelector('#detail .detail-close'),
+  detailDelete: document.querySelector('#detail .detail-delete'),
 };
 
 // UI state. Always replaced, never mutated in place.
 let state = { search: '', sort: 'date', order: 'desc' };
+let selectedId = null;
 
 function setState(patch) {
   state = { ...state, ...patch };
@@ -23,6 +33,17 @@ const TYPE_LABELS = {
   ebook: '📱 eBook',
   audiobook: '🎧 Audiobook',
 };
+
+// Five stars with a gradient fill clipped to the rating fraction, so
+// half-star (e.g. 4.5) values render correctly. Returns a fresh element.
+function starsSpan(rating) {
+  const span = document.createElement('span');
+  span.className = 'stars';
+  span.style.setProperty('--pct', `${(rating / 5) * 100}%`);
+  span.textContent = '★★★★★';
+  span.title = `${rating}/5`;
+  return span;
+}
 
 async function load() {
   const params = new URLSearchParams({
@@ -51,10 +72,19 @@ function render(books) {
   for (const book of books) {
     els.tbody.appendChild(row(book));
   }
+
+  // Keep the detail card in sync with the current data set.
+  if (selectedId) {
+    const found = books.find((b) => b.id === selectedId);
+    if (found) renderDetail(found);
+    else closeDetail();
+  }
 }
 
 function row(book) {
   const tr = document.createElement('tr');
+  tr.dataset.id = book.id;
+  if (book.id === selectedId) tr.classList.add('selected');
   tr.innerHTML = `
     <td class="col-title"></td>
     <td class="col-author"></td>
@@ -75,22 +105,57 @@ function row(book) {
   if (book.rating == null) {
     rating.innerHTML = '<span class="unrated">—</span>';
   } else {
-    // Five stars with a gradient fill clipped to the rating fraction, so
-    // half-star (e.g. 4.5) values render correctly.
-    const stars = document.createElement('span');
-    stars.className = 'stars';
-    stars.style.setProperty('--pct', `${(book.rating / 5) * 100}%`);
-    stars.textContent = '★★★★★';
-    stars.title = `${book.rating}/5`;
-    rating.appendChild(stars);
+    rating.appendChild(starsSpan(book.rating));
   }
 
   const descCell = tr.querySelector('.col-desc');
   descCell.querySelector('.desc-clamp').textContent = book.description || '';
-  if (book.description) descCell.title = book.description; // full text on hover
+  if (book.description) descCell.title = book.description;
 
-  tr.querySelector('.row-delete').addEventListener('click', () => remove(book));
+  // Click the row to open details; the delete button must not also open them.
+  tr.addEventListener('click', () => selectBook(book));
+  tr.querySelector('.row-delete').addEventListener('click', (e) => {
+    e.stopPropagation();
+    remove(book);
+  });
   return tr;
+}
+
+function selectBook(book) {
+  selectedId = book.id;
+  renderDetail(book);
+  highlight();
+}
+
+function renderDetail(book) {
+  els.detailType.textContent = TYPE_LABELS[book.type] ?? TYPE_LABELS.book;
+  els.detailTitle.textContent = book.title;
+  els.detailAuthor.textContent = book.author ? `by ${book.author}` : '';
+  els.detailDate.textContent = book.date ? `Added ${book.date}` : '';
+
+  els.detailRating.innerHTML = '';
+  if (book.rating == null) {
+    els.detailRating.innerHTML = '<span class="unrated">Unrated</span>';
+  } else {
+    els.detailRating.appendChild(starsSpan(book.rating));
+  }
+
+  els.detailDesc.textContent = book.description || 'No description.';
+  els.detailDelete.onclick = () => remove(book);
+  els.detail.classList.remove('hidden');
+}
+
+function closeDetail() {
+  selectedId = null;
+  els.detail.classList.add('hidden');
+  highlight();
+}
+
+// Toggle the selected highlight without re-fetching/re-rendering all rows.
+function highlight() {
+  for (const tr of els.tbody.children) {
+    tr.classList.toggle('selected', tr.dataset.id === selectedId);
+  }
 }
 
 // Reflect the current sort key/direction in the column headers.
@@ -110,11 +175,13 @@ async function remove(book) {
     const res = await fetch(`${API}/${encodeURIComponent(book.id)}`, { method: 'DELETE' });
     const body = await res.json();
     if (!body.success) throw new Error(body.error || 'Delete failed');
-    load();
+    load(); // render() will close the detail card if the deleted book was selected
   } catch (err) {
     alert(`Could not delete: ${err.message}`);
   }
 }
+
+els.detailClose.addEventListener('click', closeDetail);
 
 // Click a column heading to sort by it; click the active one again to flip.
 for (const th of els.headers) {

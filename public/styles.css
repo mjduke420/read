@@ -260,7 +260,7 @@ button.ghost:hover {
   white-space: nowrap;
 }
 /* Gold fill clipped to --pct of the width gives clean half (and any fraction) stars. */
-.col-rating .stars {
+.stars {
   --pct: 0%;
   display: inline-block;
   font-size: 0.95rem;
@@ -271,8 +271,88 @@ button.ghost:hover {
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
-.col-rating .unrated {
+.unrated {
   color: var(--muted);
+}
+
+/* Clickable rows + selected highlight */
+.book-table tbody tr {
+  cursor: pointer;
+}
+.book-table tbody tr.selected {
+  background: rgba(109, 139, 255, 0.14);
+}
+.book-table tbody tr.selected:hover {
+  background: rgba(109, 139, 255, 0.18);
+}
+
+/* Detail card shown above the table when a row is clicked */
+.detail {
+  position: relative;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.detail-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 2px 6px;
+}
+.detail-close:hover {
+  color: var(--text);
+}
+.detail .type-badge {
+  align-self: flex-start;
+}
+.detail-title {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.25;
+  padding-right: 28px;
+}
+.detail-author {
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+.detail-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.detail-desc {
+  margin: 4px 0 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text);
+}
+.detail-actions {
+  margin-top: 6px;
+}
+.detail-delete {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--danger);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+.detail-delete:hover {
+  border-color: var(--danger);
+  background: rgba(255, 107, 107, 0.08);
 }
 .col-desc {
   max-width: 360px;
