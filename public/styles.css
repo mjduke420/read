@@ -257,13 +257,22 @@ button.ghost:hover {
   white-space: nowrap;
 }
 .col-rating {
-  color: var(--star);
-  letter-spacing: 1px;
   white-space: nowrap;
+}
+/* Gold fill clipped to --pct of the width gives clean half (and any fraction) stars. */
+.col-rating .stars {
+  --pct: 0%;
+  display: inline-block;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, var(--star) 0 var(--pct), var(--border) var(--pct) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 .col-rating .unrated {
   color: var(--muted);
-  letter-spacing: normal;
 }
 .col-desc {
   max-width: 360px;

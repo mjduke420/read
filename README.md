@@ -62,7 +62,7 @@ All responses use the envelope `{ success, data, error }`.
 | `POST`   | `/api/books`      | `{ title*, author*, date?, rating?, type?, description? }` |
 | `DELETE` | `/api/books/:id`  | —                                                       |
 
-`*` required. `date` is `YYYY-MM-DD` (defaults to today). `rating` is `0`–`5` or empty for unrated. `type` is `book`, `ebook` or `audiobook` (defaults to `book`).
+`*` required. `date` is `YYYY-MM-DD` (defaults to today). `rating` is `0`–`5` in half-star steps (e.g. `4.5`) or empty for unrated. `type` is `book`, `ebook` or `audiobook` (defaults to `book`).
 
 ## Deploy with Docker
 

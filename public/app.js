@@ -75,8 +75,14 @@ function row(book) {
   if (book.rating == null) {
     rating.innerHTML = '<span class="unrated">—</span>';
   } else {
-    rating.textContent = '★'.repeat(book.rating) + '☆'.repeat(5 - book.rating);
-    rating.title = `${book.rating}/5`;
+    // Five stars with a gradient fill clipped to the rating fraction, so
+    // half-star (e.g. 4.5) values render correctly.
+    const stars = document.createElement('span');
+    stars.className = 'stars';
+    stars.style.setProperty('--pct', `${(book.rating / 5) * 100}%`);
+    stars.textContent = '★★★★★';
+    stars.title = `${book.rating}/5`;
+    rating.appendChild(stars);
   }
 
   const descCell = tr.querySelector('.col-desc');

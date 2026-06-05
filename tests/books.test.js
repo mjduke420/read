@@ -47,6 +47,17 @@ test('createBook rejects out-of-range rating', () => {
   assert.throws(() => createBook({ title: 'X', author: 'Y', rating: '9' }));
 });
 
+test('createBook accepts a half-star rating', () => {
+  assert.equal(createBook({ title: 'X', author: 'Y', rating: '4.5' }).rating, 4.5);
+});
+
+test('createBook rejects a rating that is not a half step', () => {
+  assert.throws(
+    () => createBook({ title: 'X', author: 'Y', rating: '4.3' }),
+    /steps of 0\.5/,
+  );
+});
+
 test('createBook rejects a malformed date', () => {
   assert.throws(() => createBook({ title: 'X', author: 'Y', date: '02/01/2024' }), /YYYY-MM-DD/);
 });

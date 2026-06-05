@@ -23,9 +23,15 @@ export const BookInputSchema = z.object({
     .default('')
     .refine((v) => v === '' || DATE_RE.test(v), 'Date must be in YYYY-MM-DD format'),
   // Empty string / null / undefined all mean "unrated" -> null.
+  // Allowed in half-star steps: 0, 0.5, 1, ... 5.
   rating: z.preprocess(
     (v) => (v === '' || v === null || v === undefined ? undefined : v),
-    z.coerce.number().int('Rating must be a whole number').min(0).max(5).optional(),
+    z.coerce
+      .number()
+      .min(0)
+      .max(5)
+      .multipleOf(0.5, 'Rating must be in steps of 0.5')
+      .optional(),
   ),
   // Media type. Missing/blank defaults to 'book'.
   type: z.preprocess(
