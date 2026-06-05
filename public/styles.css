@@ -184,7 +184,9 @@ button.ghost:hover {
 }
 
 .table-wrap {
-  overflow-x: auto;
+  overflow: auto;
+  /* ~10 rows tall, then scroll vertically for the rest */
+  max-height: 540px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -207,6 +209,10 @@ button.ghost:hover {
   letter-spacing: 0.03em;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  /* keep headers visible while the body scrolls */
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 .book-table th[data-key] {
   cursor: pointer;

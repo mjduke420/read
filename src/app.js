@@ -14,7 +14,15 @@ export function createApp(store) {
   app.use(express.json());
 
   app.use('/api/books', createBooksRouter(store));
-  app.use(express.static(join(__dirname, '..', 'public')));
+  // Serve the frontend. `no-cache` forces browsers to revalidate against the
+  // ETag every load, so a redeploy can never leave stale JS/CSS running.
+  app.use(
+    express.static(join(__dirname, '..', 'public'), {
+      etag: true,
+      lastModified: true,
+      setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache'),
+    }),
+  );
 
   // Centralized error handler — never leak internals to the client.
   // eslint-disable-next-line no-unused-vars
