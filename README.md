@@ -58,11 +58,11 @@ All responses use the envelope `{ success, data, error }`.
 
 | Method   | Path              | Body / Query                                            |
 | -------- | ----------------- | ------------------------------------------------------- |
-| `GET`    | `/api/books`      | `?search=&sort=date\|title\|author\|rating&order=asc\|desc` |
-| `POST`   | `/api/books`      | `{ title*, author*, date?, rating?, description? }`     |
+| `GET`    | `/api/books`      | `?search=&sort=date\|title\|author\|rating\|type&order=asc\|desc` |
+| `POST`   | `/api/books`      | `{ title*, author*, date?, rating?, type?, description? }` |
 | `DELETE` | `/api/books/:id`  | —                                                       |
 
-`*` required. `date` is `YYYY-MM-DD` (defaults to today). `rating` is `0`–`5` or empty for unrated.
+`*` required. `date` is `YYYY-MM-DD` (defaults to today). `rating` is `0`–`5` or empty for unrated. `type` is `book`, `ebook` or `audiobook` (defaults to `book`).
 
 ## Deploy with Docker
 
@@ -87,6 +87,7 @@ Each row in the CSV:
 | `author`      | required                                       |
 | `date`        | `YYYY-MM-DD`                                    |
 | `rating`      | `0`–`5`, blank = unrated                        |
+| `type`        | `book`, `ebook` or `audiobook` (defaults to `book`) |
 | `description` | free text (commas/quotes/newlines are safe)    |
 
 ## Project layout

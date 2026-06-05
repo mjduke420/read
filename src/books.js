@@ -27,6 +27,20 @@ export const BookInputSchema = z.object({
     (v) => (v === '' || v === null || v === undefined ? undefined : v),
     z.coerce.number().int('Rating must be a whole number').min(0).max(5).optional(),
   ),
+  // Media type. Missing/blank defaults to 'book'.
+  type: z.preprocess(
+    (v) => {
+      if (typeof v !== 'string') return v;
+      const t = v.trim().toLowerCase();
+      return t === '' ? undefined : t;
+    },
+    z
+      .enum(['book', 'ebook', 'audiobook'], {
+        errorMap: () => ({ message: 'Type must be book, ebook or audiobook' }),
+      })
+      .optional()
+      .default('book'),
+  ),
   description: z.string().trim().max(5000).optional().default(''),
 });
 
@@ -42,11 +56,12 @@ export function createBook(input) {
     author: parsed.author,
     date: parsed.date && parsed.date !== '' ? parsed.date : today(),
     rating: parsed.rating ?? null,
+    type: parsed.type ?? 'book',
     description: parsed.description ?? '',
   };
 }
 
-const SEARCH_FIELDS = ['title', 'author', 'description'];
+const SEARCH_FIELDS = ['title', 'author', 'description', 'type'];
 
 /** Case-insensitive substring search across title, author and description. */
 export function searchBooks(books, query) {
@@ -57,7 +72,7 @@ export function searchBooks(books, query) {
   );
 }
 
-export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating']);
+export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type']);
 
 /** Returns a new sorted array; never mutates the input. */
 export function sortBooks(books, sortKey, order = 'asc') {

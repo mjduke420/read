@@ -54,8 +54,16 @@ function card(book) {
       ? '<span class="meta-muted">Unrated</span>'
       : `<span class="stars" title="${book.rating}/5">${'★'.repeat(book.rating)}${'☆'.repeat(5 - book.rating)}</span>`;
 
+  const types = {
+    book: '📖 Book',
+    ebook: '📱 eBook',
+    audiobook: '🎧 Audiobook',
+  };
+  const typeLabel = types[book.type] ?? types.book;
+
   el.innerHTML = `
     <button class="delete" title="Delete" aria-label="Delete book">✕</button>
+    <span class="type-badge"></span>
     <h3></h3>
     <div class="author"></div>
     <div class="meta">
@@ -64,6 +72,7 @@ function card(book) {
     </div>
     <div class="desc"></div>
   `;
+  el.querySelector('.type-badge').textContent = typeLabel;
 
   // Set user content via textContent to avoid any HTML injection.
   el.querySelector('h3').textContent = book.title;

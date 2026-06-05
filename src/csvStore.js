@@ -5,7 +5,11 @@ import { stringify } from 'csv-stringify/sync';
 
 // Canonical column order persisted to disk. `id` is added on top of the
 // user-facing fields so books can be addressed for delete/edit later.
-export const COLUMNS = ['id', 'title', 'author', 'date', 'rating', 'description'];
+export const COLUMNS = ['id', 'title', 'author', 'date', 'rating', 'type', 'description'];
+
+// Allowed media types. Rows missing/invalid `type` fall back to 'book' so
+// CSV files written before this column existed remain valid.
+const TYPES = ['book', 'ebook', 'audiobook'];
 
 /**
  * Repository for the books CSV file.
@@ -31,6 +35,7 @@ export function createCsvStore(filePath) {
       columns: true,
       skip_empty_lines: true,
       trim: true,
+      bom: true, // tolerate a UTF-8 BOM from hand-edited files (e.g. Notepad)
     });
     return records.map(normalizeRecord);
   }
@@ -70,12 +75,14 @@ export function createCsvStore(filePath) {
 
 function normalizeRecord(rec) {
   const rating = rec.rating == null || String(rec.rating).trim() === '' ? null : Number(rec.rating);
+  const type = String(rec.type ?? '').trim().toLowerCase();
   return {
     id: rec.id ?? '',
     title: rec.title ?? '',
     author: rec.author ?? '',
     date: rec.date ?? '',
     rating: Number.isFinite(rating) ? rating : null,
+    type: TYPES.includes(type) ? type : 'book',
     description: rec.description ?? '',
   };
 }

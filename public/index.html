@@ -31,17 +31,25 @@
               <input type="date" name="date" />
             </label>
             <label>
-              Rating
-              <select name="rating">
-                <option value="">Unrated</option>
-                <option value="1">★☆☆☆☆ (1)</option>
-                <option value="2">★★☆☆☆ (2)</option>
-                <option value="3">★★★☆☆ (3)</option>
-                <option value="4">★★★★☆ (4)</option>
-                <option value="5">★★★★★ (5)</option>
+              Type
+              <select name="type">
+                <option value="book">📖 Book</option>
+                <option value="ebook">📱 eBook</option>
+                <option value="audiobook">🎧 Audiobook</option>
               </select>
             </label>
           </div>
+          <label>
+            Rating
+            <select name="rating">
+              <option value="">Unrated</option>
+              <option value="1">★☆☆☆☆ (1)</option>
+              <option value="2">★★☆☆☆ (2)</option>
+              <option value="3">★★★☆☆ (3)</option>
+              <option value="4">★★★★☆ (4)</option>
+              <option value="5">★★★★★ (5)</option>
+            </select>
+          </label>
           <label>
             Description
             <textarea name="description" rows="4" maxlength="5000"></textarea>
@@ -68,6 +76,7 @@
                 <option value="title">Title</option>
                 <option value="author">Author</option>
                 <option value="rating">Rating</option>
+                <option value="type">Type</option>
               </select>
             </label>
             <button id="order" class="ghost" type="button" aria-label="Toggle sort direction">

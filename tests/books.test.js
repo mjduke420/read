@@ -22,6 +22,23 @@ test('createBook treats empty rating as unrated (null)', () => {
   assert.equal(book.rating, null);
 });
 
+test('createBook defaults type to book when omitted', () => {
+  const book = createBook({ title: 'X', author: 'Y' });
+  assert.equal(book.type, 'book');
+});
+
+test('createBook accepts and normalizes a valid type', () => {
+  assert.equal(createBook({ title: 'X', author: 'Y', type: 'audiobook' }).type, 'audiobook');
+  assert.equal(createBook({ title: 'X', author: 'Y', type: ' Ebook ' }).type, 'ebook');
+});
+
+test('createBook rejects an invalid type', () => {
+  assert.throws(
+    () => createBook({ title: 'X', author: 'Y', type: 'scroll' }),
+    /Type must be book, ebook or audiobook/,
+  );
+});
+
 test('createBook rejects missing title', () => {
   assert.throws(() => createBook({ author: 'Y' }), /Title is required/);
 });
@@ -40,9 +57,9 @@ test('BookInputSchema is reusable for validation', () => {
 });
 
 const sample = [
-  { id: '1', title: 'Beta', author: 'Zoe', date: '2024-01-01', rating: 3, description: 'space opera' },
-  { id: '2', title: 'alpha', author: 'Amy', date: '2024-03-01', rating: 5, description: 'a cooking memoir' },
-  { id: '3', title: 'Gamma', author: 'Mike', date: '2024-02-01', rating: null, description: 'history of Rome' },
+  { id: '1', title: 'Beta', author: 'Zoe', date: '2024-01-01', rating: 3, type: 'ebook', description: 'space opera' },
+  { id: '2', title: 'alpha', author: 'Amy', date: '2024-03-01', rating: 5, type: 'audiobook', description: 'a cooking memoir' },
+  { id: '3', title: 'Gamma', author: 'Mike', date: '2024-02-01', rating: null, type: 'book', description: 'history of Rome' },
 ];
 
 test('searchBooks matches title, author and description case-insensitively', () => {
@@ -69,6 +86,17 @@ test('sortBooks by rating descending puts unrated last', () => {
 test('sortBooks by date ascending', () => {
   const ids = sortBooks(sample, 'date', 'asc').map((b) => b.id);
   assert.deepEqual(ids, ['1', '3', '2']);
+});
+
+test('sortBooks by type ascending (audiobook, book, ebook)', () => {
+  const ids = sortBooks(sample, 'type', 'asc').map((b) => b.id);
+  assert.deepEqual(ids, ['2', '3', '1']);
+});
+
+test('searchBooks matches on type', () => {
+  const res = searchBooks(sample, 'audiobook');
+  assert.equal(res.length, 1);
+  assert.equal(res[0].id, '2');
 });
 
 test('sortBooks does not mutate the input array', () => {

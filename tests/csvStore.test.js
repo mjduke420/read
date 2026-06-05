@@ -1,6 +1,6 @@
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createCsvStore } from '../src/csvStore.js';
@@ -23,7 +23,7 @@ test('readAll returns [] when the file does not exist', async () => {
 
 test('writeAll then readAll round-trips records', async () => {
   const books = [
-    { id: '1', title: 'A', author: 'B', date: '2024-01-01', rating: 4, description: 'hi' },
+    { id: '1', title: 'A', author: 'B', date: '2024-01-01', rating: 4, type: 'ebook', description: 'hi' },
   ];
   await store.writeAll(books);
   const read = await store.readAll();
@@ -34,11 +34,34 @@ test('writeAll then readAll round-trips records', async () => {
 test('preserves commas, quotes and newlines in the description', async () => {
   const tricky = 'Line one, with comma\nLine "two" with quotes';
   await store.writeAll([
-    { id: '1', title: 'T', author: 'A', date: '2024-01-01', rating: null, description: tricky },
+    { id: '1', title: 'T', author: 'A', date: '2024-01-01', rating: null, type: 'audiobook', description: tricky },
   ]);
   const read = await store.readAll();
   assert.equal(read[0].description, tricky);
   assert.equal(read[0].rating, null);
+  assert.equal(read[0].type, 'audiobook');
+});
+
+test('tolerates a UTF-8 BOM on a hand-edited file', async () => {
+  await writeFile(
+    join(dir, 'books.csv'),
+    '﻿id,title,author,date,rating,type,description\nx,T,A,2024-01-01,5,book,desc\n',
+    'utf8',
+  );
+  const read = await store.readAll();
+  assert.equal(read[0].id, 'x'); // header not mangled by the BOM
+  assert.equal(read[0].title, 'T');
+});
+
+test('legacy CSV without a type column defaults type to book', async () => {
+  // Simulate a file written before the `type` column existed.
+  await writeFile(
+    join(dir, 'books.csv'),
+    'id,title,author,date,rating,description\n1,Old,Author,2024-01-01,3,legacy row\n',
+    'utf8',
+  );
+  const read = await store.readAll();
+  assert.equal(read[0].type, 'book');
 });
 
 test('update appends without losing existing data', async () => {

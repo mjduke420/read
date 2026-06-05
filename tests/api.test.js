@@ -38,6 +38,22 @@ test('POST /api/books creates a book and GET returns it', async () => {
   assert.equal(list.body.data.length, 1);
 });
 
+test('POST /api/books stores the media type and defaults to book', async () => {
+  const withType = await request(app)
+    .post('/api/books')
+    .send({ title: 'Audio', author: 'A', type: 'audiobook' });
+  assert.equal(withType.body.data.type, 'audiobook');
+
+  const noType = await request(app).post('/api/books').send({ title: 'Plain', author: 'B' });
+  assert.equal(noType.body.data.type, 'book');
+});
+
+test('POST /api/books rejects an invalid type with 400', async () => {
+  const res = await request(app).post('/api/books').send({ title: 'X', author: 'Y', type: 'vinyl' });
+  assert.equal(res.status, 400);
+  assert.match(res.body.error, /Type must be/);
+});
+
 test('POST /api/books rejects missing title with 400', async () => {
   const res = await request(app).post('/api/books').send({ author: 'Nobody' });
   assert.equal(res.status, 400);

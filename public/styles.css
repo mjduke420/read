@@ -198,6 +198,17 @@ button.ghost:hover {
   gap: 8px;
   position: relative;
 }
+.card .type-badge {
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(109, 139, 255, 0.12);
+  border: 1px solid rgba(109, 139, 255, 0.3);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-right: 24px;
+}
 .card h3 {
   margin: 0;
   font-size: 1.05rem;
