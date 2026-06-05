@@ -14,6 +14,11 @@ COPY . .
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV BOOKS_CSV=/data/books.csv
+
+# Create /data owned by the non-root `node` user. A fresh named volume mounted
+# here inherits this ownership, so the app can write books.csv. Without this the
+# volume is root-owned and every write fails with EACCES (HTTP 500).
+RUN mkdir -p /data && chown -R node:node /data
 VOLUME ["/data"]
 
 EXPOSE 3000
