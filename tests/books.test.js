@@ -32,6 +32,16 @@ test('createBook accepts and normalizes a valid type', () => {
   assert.equal(createBook({ title: 'X', author: 'Y', type: ' Ebook ' }).type, 'ebook');
 });
 
+test('createBook defaults dnf to false (Read)', () => {
+  assert.equal(createBook({ title: 'X', author: 'Y' }).dnf, false);
+});
+
+test('createBook coerces checkbox/string truthy values for dnf', () => {
+  assert.equal(createBook({ title: 'X', author: 'Y', dnf: 'on' }).dnf, true);
+  assert.equal(createBook({ title: 'X', author: 'Y', dnf: true }).dnf, true);
+  assert.equal(createBook({ title: 'X', author: 'Y', dnf: 'false' }).dnf, false);
+});
+
 test('createBook rejects an invalid type', () => {
   assert.throws(
     () => createBook({ title: 'X', author: 'Y', type: 'scroll' }),
@@ -102,6 +112,15 @@ test('sortBooks by date ascending', () => {
 test('sortBooks by type ascending (audiobook, book, ebook)', () => {
   const ids = sortBooks(sample, 'type', 'asc').map((b) => b.id);
   assert.deepEqual(ids, ['2', '3', '1']);
+});
+
+test('sortBooks by dnf puts Read before DNF ascending', () => {
+  const items = [
+    { id: 'a', dnf: true },
+    { id: 'b', dnf: false },
+    { id: 'c', dnf: true },
+  ];
+  assert.deepEqual(sortBooks(items, 'dnf', 'asc').map((b) => b.id), ['b', 'a', 'c']);
 });
 
 test('searchBooks matches on type', () => {

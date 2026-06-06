@@ -15,7 +15,10 @@ const els = {
   detailAuthor: document.querySelector('#detail .detail-author'),
   detailDate: document.querySelector('#detail .detail-date'),
   detailRating: document.querySelector('#detail .detail-rating'),
+  detailStatus: document.querySelector('#detail .detail-status'),
   detailDesc: document.querySelector('#detail .detail-desc'),
+  dnfToggle: document.getElementById('dnf-toggle'),
+  dnfState: document.getElementById('dnf-state'),
   detailClose: document.querySelector('#detail .detail-close'),
   detailDelete: document.querySelector('#detail .detail-delete'),
   btnListView: document.getElementById('btn-list-view'),
@@ -65,6 +68,14 @@ function starsSpan(rating) {
   span.style.setProperty('--pct', `${(rating / 5) * 100}%`);
   span.textContent = '★★★★★';
   span.title = `${rating}/5`;
+  return span;
+}
+
+// Read / DNF status pill. Returns a fresh element.
+function statusBadge(dnf) {
+  const span = document.createElement('span');
+  span.className = `status-badge ${dnf ? 'status-dnf' : 'status-read'}`;
+  span.textContent = dnf ? 'DNF' : 'Read';
   return span;
 }
 
@@ -139,6 +150,7 @@ function row(book) {
     <td class="col-type"><span class="type-badge"></span></td>
     <td class="col-date"></td>
     <td class="col-rating"></td>
+    <td class="col-status"></td>
     <td class="col-desc"><div class="desc-clamp"></div></td>
     <td class="col-actions"><button class="row-delete" title="Delete" aria-label="Delete book">✕</button></td>
   `;
@@ -167,6 +179,8 @@ function row(book) {
   } else {
     rating.appendChild(starsSpan(book.rating));
   }
+
+  tr.querySelector('.col-status').appendChild(statusBadge(book.dnf));
 
   const descCell = tr.querySelector('.col-desc');
   descCell.querySelector('.desc-clamp').textContent = fit(book.description || '');
@@ -217,6 +231,9 @@ function renderDetail(book) {
   } else {
     els.detailRating.appendChild(starsSpan(book.rating));
   }
+
+  els.detailStatus.innerHTML = '';
+  els.detailStatus.appendChild(statusBadge(book.dnf));
 
   els.detailDesc.textContent = book.description || 'No description.';
   els.detailDelete.onclick = () => remove(book);
@@ -349,8 +366,17 @@ els.clearRatingBtn.addEventListener('click', () => {
   updateStarWidget('');
 });
 
+// DNF toggle: reflect on/off as "DNF" / "Read".
+function updateDnfLabel() {
+  els.dnfState.textContent = els.dnfToggle.checked ? 'DNF' : 'Read';
+}
+els.dnfToggle.addEventListener('change', updateDnfLabel);
+
 els.form.addEventListener('reset', () => {
-  setTimeout(() => updateStarWidget(''), 0);
+  setTimeout(() => {
+    updateStarWidget('');
+    updateDnfLabel();
+  }, 0);
 });
 
 // Submit Form

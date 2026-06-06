@@ -47,6 +47,12 @@ export const BookInputSchema = z.object({
       .optional()
       .default('book'),
   ),
+  // "Did not finish" flag. Accepts checkbox/string/boolean truthy forms;
+  // anything else (including missing) means false (Read).
+  dnf: z.preprocess(
+    (v) => v === true || v === 'true' || v === 'on' || v === '1' || v === 'yes',
+    z.boolean(),
+  ),
   description: z.string().trim().max(5000).optional().default(''),
 });
 
@@ -63,6 +69,7 @@ export function createBook(input) {
     date: parsed.date && parsed.date !== '' ? parsed.date : today(),
     rating: parsed.rating ?? null,
     type: parsed.type ?? 'book',
+    dnf: parsed.dnf ?? false,
     description: parsed.description ?? '',
   };
 }
@@ -78,7 +85,7 @@ export function searchBooks(books, query) {
   );
 }
 
-export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type']);
+export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type', 'dnf']);
 
 /** Returns a new sorted array; never mutates the input. */
 export function sortBooks(books, sortKey, order = 'asc') {
@@ -91,6 +98,10 @@ function compare(a, b, key) {
   if (key === 'rating') {
     // Unrated books sort below any rated book.
     return (a.rating ?? -1) - (b.rating ?? -1);
+  }
+  if (key === 'dnf') {
+    // Read (false) before DNF (true) when ascending.
+    return (a.dnf ? 1 : 0) - (b.dnf ? 1 : 0);
   }
   if (key === 'date') {
     // ISO YYYY-MM-DD sorts correctly as plain strings.

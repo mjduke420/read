@@ -48,6 +48,14 @@ test('POST /api/books stores the media type and defaults to book', async () => {
   assert.equal(noType.body.data.type, 'book');
 });
 
+test('POST /api/books stores the dnf flag and defaults to false', async () => {
+  const dnf = await request(app).post('/api/books').send({ title: 'Unfinished', author: 'A', dnf: 'on' });
+  assert.equal(dnf.body.data.dnf, true);
+
+  const read = await request(app).post('/api/books').send({ title: 'Finished', author: 'B' });
+  assert.equal(read.body.data.dnf, false);
+});
+
 test('POST /api/books rejects an invalid type with 400', async () => {
   const res = await request(app).post('/api/books').send({ title: 'X', author: 'Y', type: 'vinyl' });
   assert.equal(res.status, 400);

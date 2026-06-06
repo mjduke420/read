@@ -38,6 +38,7 @@ const generated = Array.from({ length: count }, (_, i) =>
     date: randomDate(),
     rating: pick(ratings),
     type: pick(types),
+    dnf: Math.random() < 0.25, // ~1 in 4 marked did-not-finish
     description: `Stress-test entry ${i + 1}. ${pick(adjectives)} ${pick(nouns).toLowerCase()} meets ${pick(adjectives).toLowerCase()} ${pick(nouns).toLowerCase()} in a tale of ${pick(nouns).toLowerCase()}s.`,
   }),
 );
