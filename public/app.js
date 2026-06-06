@@ -289,7 +289,9 @@ halves.forEach((half) => {
     updateStarWidget(parseFloat(half.dataset.value));
   });
   half.addEventListener('click', () => {
-    const val = half.dataset.value;
+    // Normalize "1.0" -> "1" etc. so the value matches a <select> <option>
+    // (otherwise whole-star selections silently reset to unrated).
+    const val = String(parseFloat(half.dataset.value));
     els.ratingSelect.value = val;
     updateStarWidget(val);
   });

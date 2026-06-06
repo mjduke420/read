@@ -867,21 +867,30 @@ button.ghost:hover {
     order: 2;
   }
 
-  /* Smaller grid: ~5 rows tall then vertical scroll, and keep a min-width so
-     the columns scroll horizontally instead of being squeezed. */
+  /* Narrow list on mobile: fit the screen (no horizontal scroll) and show
+     only Title, Rating and the delete action. Everything else is in the
+     detail drawer on tap. ~5 rows tall, then vertical scroll. */
   .table-wrap {
     max-height: 300px;
   }
   .book-table {
-    min-width: 600px;
+    min-width: 0;
     font-size: 0.85rem;
   }
   .book-table thead th,
   .book-table tbody td {
     padding: 10px 12px;
   }
-  .col-desc {
-    max-width: none;
+  /* Hide secondary columns in list view only (grid view keeps them). */
+  .table-wrap:not(.view-grid) .col-author,
+  .table-wrap:not(.view-grid) .col-type,
+  .table-wrap:not(.view-grid) .col-date,
+  .table-wrap:not(.view-grid) .col-desc,
+  .table-wrap:not(.view-grid) thead th:nth-child(2),
+  .table-wrap:not(.view-grid) thead th:nth-child(3),
+  .table-wrap:not(.view-grid) thead th:nth-child(4),
+  .table-wrap:not(.view-grid) thead th:nth-child(6) {
+    display: none;
   }
   .desc-clamp {
     -webkit-line-clamp: 1;
