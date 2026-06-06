@@ -15,6 +15,8 @@ so it stays portable and easy to back up or edit by hand.
 
 ## Screenshot
 
+![Application screenshot](screenshot.png)
+
 ## Tech stack
 
 - **Backend:** Node.js + Express, `csv-parse` / `csv-stringify`, `zod` validation

@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reading List</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css?v=8" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
   </head>
@@ -39,9 +42,9 @@
               </select>
             </label>
           </div>
-          <label>
+          <label class="rating-label">
             Rating
-            <select name="rating">
+            <select name="rating" id="rating-select" class="visually-hidden">
               <option value="">Unrated</option>
               <option value="0.5">½ (0.5)</option>
               <option value="1">★ (1)</option>
@@ -54,6 +57,29 @@
               <option value="4.5">★★★★½ (4.5)</option>
               <option value="5">★★★★★ (5)</option>
             </select>
+            <div class="star-rating-input" id="star-rating-input" role="radiogroup" aria-label="Rating">
+              <div class="star-input-wrapper" data-index="1">
+                <span class="star-input-half left" data-value="0.5" role="radio" aria-checked="false" aria-label="0.5 stars"></span>
+                <span class="star-input-half right" data-value="1.0" role="radio" aria-checked="false" aria-label="1 star"></span>
+              </div>
+              <div class="star-input-wrapper" data-index="2">
+                <span class="star-input-half left" data-value="1.5" role="radio" aria-checked="false" aria-label="1.5 stars"></span>
+                <span class="star-input-half right" data-value="2.0" role="radio" aria-checked="false" aria-label="2 stars"></span>
+              </div>
+              <div class="star-input-wrapper" data-index="3">
+                <span class="star-input-half left" data-value="2.5" role="radio" aria-checked="false" aria-label="2.5 stars"></span>
+                <span class="star-input-half right" data-value="3.0" role="radio" aria-checked="false" aria-label="3 stars"></span>
+              </div>
+              <div class="star-input-wrapper" data-index="4">
+                <span class="star-input-half left" data-value="3.5" role="radio" aria-checked="false" aria-label="3.5 stars"></span>
+                <span class="star-input-half right" data-value="4.0" role="radio" aria-checked="false" aria-label="4 stars"></span>
+              </div>
+              <div class="star-input-wrapper" data-index="5">
+                <span class="star-input-half left" data-value="4.5" role="radio" aria-checked="false" aria-label="4.5 stars"></span>
+                <span class="star-input-half right" data-value="5.0" role="radio" aria-checked="false" aria-label="5 stars"></span>
+              </div>
+              <button type="button" class="clear-rating-btn" id="clear-rating" title="Clear Rating" aria-label="Clear rating">✕</button>
+            </div>
           </label>
           <label>
             Description
@@ -73,6 +99,14 @@
             placeholder="Search title, author, type or description…"
             aria-label="Search books"
           />
+          <div class="view-toggle-wrap">
+            <button id="btn-list-view" class="view-toggle-btn active" type="button" title="List View" aria-label="List View">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </button>
+            <button id="btn-grid-view" class="view-toggle-btn" type="button" title="Grid View" aria-label="Grid View">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </button>
+          </div>
         </div>
 
         <div id="detail" class="detail hidden" aria-live="polite">
@@ -112,6 +146,8 @@
         <p id="empty" class="empty hidden">No books yet. Add your first one!</p>
       </section>
     </main>
+
+    <div id="detail-backdrop" class="detail-backdrop hidden"></div>
 
     <script src="app.js?v=8" type="module"></script>
   </body>
