@@ -109,21 +109,6 @@
           </div>
         </div>
 
-        <div id="detail" class="detail hidden" aria-live="polite">
-          <button class="detail-close" type="button" aria-label="Close details">✕</button>
-          <span class="type-badge detail-type"></span>
-          <h3 class="detail-title"></h3>
-          <div class="detail-author"></div>
-          <div class="detail-meta">
-            <span class="detail-date"></span>
-            <span class="detail-rating"></span>
-          </div>
-          <p class="detail-desc"></p>
-          <div class="detail-actions">
-            <button class="detail-delete" type="button">Delete book</button>
-          </div>
-        </div>
-
         <p id="count" class="count"></p>
         <p class="sort-hint">Tap a column heading to sort; tap it again to reverse.</p>
 
@@ -148,6 +133,24 @@
     </main>
 
     <div id="detail-backdrop" class="detail-backdrop hidden"></div>
+
+    <!-- Detail drawer lives at body level so its position:fixed escapes the
+         .panel backdrop-filter containing block (otherwise the backdrop would
+         render on top of it and the content would look blurry/empty). -->
+    <div id="detail" class="detail hidden" aria-live="polite">
+      <button class="detail-close" type="button" aria-label="Close details">✕</button>
+      <span class="type-badge detail-type"></span>
+      <h3 class="detail-title"></h3>
+      <div class="detail-author"></div>
+      <div class="detail-meta">
+        <span class="detail-date"></span>
+        <span class="detail-rating"></span>
+      </div>
+      <p class="detail-desc"></p>
+      <div class="detail-actions">
+        <button class="detail-delete" type="button">Delete book</button>
+      </div>
+    </div>
 
     <script src="app.js?v=10" type="module"></script>
   </body>
