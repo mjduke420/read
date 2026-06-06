@@ -13,6 +13,8 @@ so it stays portable and easy to back up or edit by hand.
 - **CSV-backed** storage with atomic, crash-safe writes
 - Clean REST API (`/api/books`) decoupled from the frontend
 
+## Screenshot
+
 ## Tech stack
 
 - **Backend:** Node.js + Express, `csv-parse` / `csv-stringify`, `zod` validation
