@@ -18,6 +18,12 @@ const els = {
   detailDesc: document.querySelector('#detail .detail-desc'),
   detailClose: document.querySelector('#detail .detail-close'),
   detailDelete: document.querySelector('#detail .detail-delete'),
+  btnListView: document.getElementById('btn-list-view'),
+  btnGridView: document.getElementById('btn-grid-view'),
+  tableWrap: document.querySelector('.table-wrap'),
+  detailBackdrop: document.getElementById('detail-backdrop'),
+  ratingSelect: document.getElementById('rating-select'),
+  clearRatingBtn: document.getElementById('clear-rating'),
 };
 
 // On narrow screens, long cell values are truncated in the grid; the full
@@ -118,7 +124,10 @@ function row(book) {
   authorEl.textContent = fit(book.author);
   authorEl.title = book.author;
 
-  tr.querySelector('.type-badge').textContent = TYPE_LABELS[book.type] ?? TYPE_LABELS.book;
+  const badge = tr.querySelector('.type-badge');
+  badge.textContent = TYPE_LABELS[book.type] ?? TYPE_LABELS.book;
+  badge.className = `type-badge type-badge-${book.type || 'book'}`;
+
   tr.querySelector('.col-date').textContent = book.date || '';
 
   const rating = tr.querySelector('.col-rating');
@@ -131,6 +140,22 @@ function row(book) {
   const descCell = tr.querySelector('.col-desc');
   descCell.querySelector('.desc-clamp').textContent = fit(book.description || '');
   if (book.description) descCell.title = book.description;
+
+  // Setup dynamic covers visual parameters for grid view
+  const initial = (book.title ? book.title.charAt(0) : '?').toUpperCase();
+  const colors = [
+    ['#8b5cf6', '#06b6d4'], // Indigo -> Cyan
+    ['#ec4899', '#f43f5e'], // Violet -> Rose
+    ['#10b981', '#3b82f6'], // Emerald -> Blue
+    ['#f59e0b', '#ef4444'], // Amber -> Red
+    ['#3b82f6', '#8b5cf6'], // Blue -> Violet
+    ['#14b8a6', '#10b981']  // Teal -> Emerald
+  ];
+  const hash = [...(book.title || '')].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const pair = colors[hash % colors.length];
+  tr.style.setProperty('--title-initial', `"${initial}"`);
+  tr.style.setProperty('--cover-1', pair[0]);
+  tr.style.setProperty('--cover-2', pair[1]);
 
   // Click the row to open details; the delete button must not also open them.
   tr.addEventListener('click', () => selectBook(book));
@@ -145,10 +170,12 @@ function selectBook(book) {
   selectedId = book.id;
   renderDetail(book);
   highlight();
+  els.detailBackdrop.classList.remove('hidden');
 }
 
 function renderDetail(book) {
   els.detailType.textContent = TYPE_LABELS[book.type] ?? TYPE_LABELS.book;
+  els.detailType.className = `type-badge type-badge-${book.type || 'book'}`;
   els.detailTitle.textContent = book.title;
   els.detailAuthor.textContent = book.author ? `by ${book.author}` : '';
   els.detailDate.textContent = book.date ? `Added ${book.date}` : '';
@@ -168,6 +195,7 @@ function renderDetail(book) {
 function closeDetail() {
   selectedId = null;
   els.detail.classList.add('hidden');
+  els.detailBackdrop.classList.add('hidden');
   highlight();
 }
 
@@ -203,6 +231,7 @@ async function remove(book) {
 }
 
 els.detailClose.addEventListener('click', closeDetail);
+els.detailBackdrop.addEventListener('click', closeDetail);
 
 // Re-render when crossing the mobile breakpoint so truncation updates.
 MOBILE.addEventListener('change', () => render(lastBooks));
@@ -220,6 +249,66 @@ for (const th of els.headers) {
   });
 }
 
+// Toggle View Modes
+let viewMode = localStorage.getItem('viewMode') || 'list';
+function setViewMode(mode) {
+  viewMode = mode;
+  localStorage.setItem('viewMode', mode);
+  if (mode === 'grid') {
+    els.tableWrap.classList.add('view-grid');
+    els.btnGridView.classList.add('active');
+    els.btnListView.classList.remove('active');
+  } else {
+    els.tableWrap.classList.remove('view-grid');
+    els.btnListView.classList.add('active');
+    els.btnGridView.classList.remove('active');
+  }
+}
+els.btnListView.addEventListener('click', () => setViewMode('list'));
+els.btnGridView.addEventListener('click', () => setViewMode('grid'));
+setViewMode(viewMode);
+
+// Custom Star Rating Widget Logic
+const starWrappers = document.querySelectorAll('#star-rating-input .star-input-wrapper');
+function updateStarWidget(ratingVal) {
+  const rating = parseFloat(ratingVal || 0);
+  starWrappers.forEach((wrapper) => {
+    const idx = parseInt(wrapper.dataset.index, 10);
+    wrapper.classList.remove('active-full', 'active-half');
+    if (idx <= rating) {
+      wrapper.classList.add('active-full');
+    } else if (idx - 0.5 === rating) {
+      wrapper.classList.add('active-half');
+    }
+  });
+}
+
+const halves = document.querySelectorAll('#star-rating-input .star-input-half');
+halves.forEach((half) => {
+  half.addEventListener('mouseenter', () => {
+    updateStarWidget(parseFloat(half.dataset.value));
+  });
+  half.addEventListener('click', () => {
+    const val = half.dataset.value;
+    els.ratingSelect.value = val;
+    updateStarWidget(val);
+  });
+});
+
+document.getElementById('star-rating-input').addEventListener('mouseleave', () => {
+  updateStarWidget(els.ratingSelect.value);
+});
+
+els.clearRatingBtn.addEventListener('click', () => {
+  els.ratingSelect.value = '';
+  updateStarWidget('');
+});
+
+els.form.addEventListener('reset', () => {
+  setTimeout(() => updateStarWidget(''), 0);
+});
+
+// Submit Form
 els.form.addEventListener('submit', async (e) => {
   e.preventDefault();
   els.formMsg.textContent = '';
