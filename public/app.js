@@ -21,6 +21,13 @@ const els = {
   dnfState: document.getElementById('dnf-state'),
   detailClose: document.querySelector('#detail .detail-close'),
   detailDelete: document.querySelector('#detail .detail-delete'),
+  detailView: document.querySelector('#detail .detail-view'),
+  detailEdit: document.querySelector('#detail .detail-edit'),
+  detailEditForm: document.getElementById('detail-edit-form'),
+  detailCancel: document.querySelector('#detail .detail-cancel'),
+  detailEditMsg: document.querySelector('#detail .detail-edit-msg'),
+  editDnf: document.getElementById('edit-dnf'),
+  editDnfState: document.getElementById('edit-dnf-state'),
   btnListView: document.getElementById('btn-list-view'),
   btnGridView: document.getElementById('btn-grid-view'),
   tableWrap: document.querySelector('.table-wrap'),
@@ -49,6 +56,7 @@ let lastBooks = [];
 // UI state. Always replaced, never mutated in place.
 let state = { search: '', sort: 'date', order: 'desc', page: 1 };
 let selectedId = null;
+let currentBook = null; // the book shown in the detail drawer (for editing)
 
 function setState(patch) {
   state = { ...state, ...patch };
@@ -219,6 +227,10 @@ function selectBook(book) {
 }
 
 function renderDetail(book) {
+  currentBook = book;
+  // Always (re)open in read-only view mode.
+  els.detailView.classList.remove('hidden');
+  els.detailEditForm.classList.add('hidden');
   els.detailType.textContent = TYPE_LABELS[book.type] ?? TYPE_LABELS.book;
   els.detailType.className = `type-badge type-badge-${book.type || 'book'}`;
   els.detailTitle.textContent = book.title;
@@ -277,6 +289,59 @@ async function remove(book) {
     alert(`Could not delete: ${err.message}`);
   }
 }
+
+// --- Edit a record from the detail drawer ---------------------------------
+function openEdit() {
+  if (!currentBook) return;
+  const f = els.detailEditForm;
+  f.elements.title.value = currentBook.title || '';
+  f.elements.author.value = currentBook.author || '';
+  f.elements.date.value = currentBook.date || '';
+  f.elements.type.value = currentBook.type || 'book';
+  f.elements.rating.value = currentBook.rating == null ? '' : String(currentBook.rating);
+  els.editDnf.checked = !!currentBook.dnf;
+  els.editDnfState.textContent = currentBook.dnf ? 'DNF' : 'Read';
+  f.elements.description.value = currentBook.description || '';
+  els.detailEditMsg.textContent = '';
+  els.detailEditMsg.className = 'detail-edit-msg form-msg';
+  els.detailView.classList.add('hidden');
+  els.detailEditForm.classList.remove('hidden');
+  f.elements.title.focus();
+}
+
+function cancelEdit() {
+  els.detailEditForm.classList.add('hidden');
+  els.detailView.classList.remove('hidden');
+}
+
+els.detailEdit.addEventListener('click', openEdit);
+els.detailCancel.addEventListener('click', cancelEdit);
+els.editDnf.addEventListener('change', () => {
+  els.editDnfState.textContent = els.editDnf.checked ? 'DNF' : 'Read';
+});
+
+els.detailEditForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!currentBook) return;
+  els.detailEditMsg.textContent = '';
+  els.detailEditMsg.className = 'detail-edit-msg form-msg';
+
+  const data = Object.fromEntries(new FormData(els.detailEditForm));
+  try {
+    const res = await fetch(`${API}/${encodeURIComponent(currentBook.id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const body = await res.json();
+    if (!body.success) throw new Error(body.error || 'Could not save changes');
+    cancelEdit(); // back to view; load() refreshes it with the saved data
+    load();
+  } catch (err) {
+    els.detailEditMsg.textContent = err.message;
+    els.detailEditMsg.classList.add('error');
+  }
+});
 
 els.detailClose.addEventListener('click', closeDetail);
 els.detailBackdrop.addEventListener('click', closeDetail);

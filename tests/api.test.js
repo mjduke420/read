@@ -115,3 +115,34 @@ test('DELETE of an unknown id returns 404', async () => {
   assert.equal(res.status, 404);
   assert.equal(res.body.success, false);
 });
+
+test('PUT updates a book, keeping its id', async () => {
+  const created = await request(app).post('/api/books').send({ title: 'Old', author: 'A', rating: 2 });
+  const id = created.body.data.id;
+
+  const res = await request(app)
+    .put(`/api/books/${id}`)
+    .send({ title: 'New', author: 'B', rating: 4.5, type: 'ebook', dnf: 'on', description: 'edited' });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.data.id, id);
+  assert.equal(res.body.data.title, 'New');
+  assert.equal(res.body.data.rating, 4.5);
+  assert.equal(res.body.data.dnf, true);
+
+  const list = await request(app).get('/api/books');
+  assert.equal(list.body.data.length, 1);
+  assert.equal(list.body.data[0].title, 'New');
+});
+
+test('PUT of an unknown id returns 404', async () => {
+  const res = await request(app).put('/api/books/nope').send({ title: 'X', author: 'Y' });
+  assert.equal(res.status, 404);
+  assert.equal(res.body.success, false);
+});
+
+test('PUT with invalid input returns 400', async () => {
+  const created = await request(app).post('/api/books').send({ title: 'Keep', author: 'A' });
+  const res = await request(app).put(`/api/books/${created.body.data.id}`).send({ author: 'No title' });
+  assert.equal(res.status, 400);
+  assert.match(res.body.error, /Title is required/);
+});

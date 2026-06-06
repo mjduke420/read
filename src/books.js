@@ -57,13 +57,12 @@ export const BookInputSchema = z.object({
 });
 
 /**
- * Validates raw input and returns a brand-new, fully-formed book record.
+ * Validates raw input and returns the normalized book fields (no id).
  * Never mutates the input. Throws ZodError on invalid input.
  */
-export function createBook(input) {
+export function buildBookFields(input) {
   const parsed = BookInputSchema.parse(input ?? {});
   return {
-    id: randomUUID(),
     title: parsed.title,
     author: parsed.author,
     date: parsed.date && parsed.date !== '' ? parsed.date : today(),
@@ -72,6 +71,16 @@ export function createBook(input) {
     dnf: parsed.dnf ?? false,
     description: parsed.description ?? '',
   };
+}
+
+/** Builds a brand-new book record with a fresh id. */
+export function createBook(input) {
+  return { id: randomUUID(), ...buildBookFields(input) };
+}
+
+/** Builds an updated book record, preserving the existing id. */
+export function updateBook(id, input) {
+  return { id, ...buildBookFields(input) };
 }
 
 const SEARCH_FIELDS = ['title', 'author', 'description', 'type'];

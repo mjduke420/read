@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=13" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
   </head>
   <body>
@@ -154,20 +154,83 @@
          render on top of it and the content would look blurry/empty). -->
     <div id="detail" class="detail hidden" aria-live="polite">
       <button class="detail-close" type="button" aria-label="Close details">✕</button>
-      <span class="type-badge detail-type"></span>
-      <h3 class="detail-title"></h3>
-      <div class="detail-author"></div>
-      <div class="detail-meta">
-        <span class="detail-date"></span>
-        <span class="detail-rating"></span>
-        <span class="detail-status"></span>
+
+      <div class="detail-view">
+        <span class="type-badge detail-type"></span>
+        <h3 class="detail-title"></h3>
+        <div class="detail-author"></div>
+        <div class="detail-meta">
+          <span class="detail-date"></span>
+          <span class="detail-rating"></span>
+          <span class="detail-status"></span>
+        </div>
+        <p class="detail-desc"></p>
+        <div class="detail-actions">
+          <button class="detail-edit" type="button">Edit</button>
+          <button class="detail-delete" type="button">Delete book</button>
+        </div>
       </div>
-      <p class="detail-desc"></p>
-      <div class="detail-actions">
-        <button class="detail-delete" type="button">Delete book</button>
-      </div>
+
+      <form class="detail-edit-form hidden" id="detail-edit-form" autocomplete="off" novalidate>
+        <h3 class="detail-edit-title">Edit book</h3>
+        <label>
+          Title <span class="req">*</span>
+          <input type="text" name="title" maxlength="500" required />
+        </label>
+        <label>
+          Author <span class="req">*</span>
+          <input type="text" name="author" maxlength="300" required />
+        </label>
+        <div class="row">
+          <label>
+            Date
+            <input type="date" name="date" />
+          </label>
+          <label>
+            Type
+            <select name="type">
+              <option value="book">📖 Book</option>
+              <option value="ebook">📱 eBook</option>
+              <option value="audiobook">🎧 Audiobook</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Rating
+          <select name="rating">
+            <option value="">Unrated</option>
+            <option value="0.5">½ (0.5)</option>
+            <option value="1">★ (1)</option>
+            <option value="1.5">★½ (1.5)</option>
+            <option value="2">★★ (2)</option>
+            <option value="2.5">★★½ (2.5)</option>
+            <option value="3">★★★ (3)</option>
+            <option value="3.5">★★★½ (3.5)</option>
+            <option value="4">★★★★ (4)</option>
+            <option value="4.5">★★★★½ (4.5)</option>
+            <option value="5">★★★★★ (5)</option>
+          </select>
+        </label>
+        <label class="toggle-field">
+          Status
+          <span class="toggle-row">
+            <input type="checkbox" name="dnf" id="edit-dnf" class="toggle-input" />
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-state" id="edit-dnf-state">Read</span>
+          </span>
+        </label>
+        <label>
+          Description
+          <textarea name="description" rows="4" maxlength="5000"></textarea>
+        </label>
+        <div class="detail-actions">
+          <button type="submit" class="primary">Save changes</button>
+          <button type="button" class="detail-cancel ghost">Cancel</button>
+        </div>
+        <p class="detail-edit-msg form-msg" role="status" aria-live="polite"></p>
+      </form>
     </div>
 
-    <script src="app.js?v=12" type="module"></script>
+    <script src="app.js?v=13" type="module"></script>
   </body>
 </html>

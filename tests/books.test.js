@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createBook, searchBooks, sortBooks, paginate, BookInputSchema } from '../src/books.js';
+import { createBook, updateBook, searchBooks, sortBooks, paginate, BookInputSchema } from '../src/books.js';
 
 test('createBook builds a record with an id and trimmed fields', () => {
   const book = createBook({ title: '  Dune  ', author: ' Herbert ', date: '2024-02-01', rating: '4' });
@@ -30,6 +30,25 @@ test('createBook defaults type to book when omitted', () => {
 test('createBook accepts and normalizes a valid type', () => {
   assert.equal(createBook({ title: 'X', author: 'Y', type: 'audiobook' }).type, 'audiobook');
   assert.equal(createBook({ title: 'X', author: 'Y', type: ' Ebook ' }).type, 'ebook');
+});
+
+test('updateBook keeps the given id and applies validated fields', () => {
+  const updated = updateBook('keep-id', {
+    title: '  New Title ',
+    author: 'A',
+    rating: '3.5',
+    type: 'ebook',
+    dnf: 'on',
+  });
+  assert.equal(updated.id, 'keep-id');
+  assert.equal(updated.title, 'New Title');
+  assert.equal(updated.rating, 3.5);
+  assert.equal(updated.type, 'ebook');
+  assert.equal(updated.dnf, true);
+});
+
+test('updateBook rejects invalid input (missing title)', () => {
+  assert.throws(() => updateBook('x', { author: 'A' }), /Title is required/);
 });
 
 test('createBook defaults dnf to false (Read)', () => {
