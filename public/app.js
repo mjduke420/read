@@ -18,10 +18,17 @@ const els = {
   detailDesc: document.querySelector('#detail .detail-desc'),
   detailClose: document.querySelector('#detail .detail-close'),
   detailDelete: document.querySelector('#detail .detail-delete'),
-  mSort: document.getElementById('m-sort'),
-  mOrder: document.getElementById('m-order'),
-  mOrderIcon: document.getElementById('m-order-icon'),
 };
+
+// On narrow screens, long cell values are truncated in the grid; the full
+// text is still available in the detail card when a row is selected.
+const MOBILE = window.matchMedia('(max-width: 640px)');
+const MAX_CELL = 20;
+function truncate(text) {
+  const s = String(text ?? '');
+  return s.length > MAX_CELL ? `${s.slice(0, MAX_CELL).trimEnd()}…` : s;
+}
+let lastBooks = [];
 
 // UI state. Always replaced, never mutated in place.
 let state = { search: '', sort: 'date', order: 'desc' };
@@ -67,6 +74,7 @@ async function load() {
 }
 
 function render(books) {
+  lastBooks = books;
   els.tbody.innerHTML = '';
   const isEmpty = books.length === 0;
   els.empty.classList.toggle('hidden', !isEmpty);
@@ -88,20 +96,28 @@ function row(book) {
   const tr = document.createElement('tr');
   tr.dataset.id = book.id;
   if (book.id === selectedId) tr.classList.add('selected');
-  // data-label values surface as field labels in the mobile card layout.
   tr.innerHTML = `
     <td class="col-title"></td>
-    <td class="col-author" data-label="Author"></td>
-    <td class="col-type" data-label="Type"><span class="type-badge"></span></td>
-    <td class="col-date" data-label="Date"></td>
-    <td class="col-rating" data-label="Rating"></td>
-    <td class="col-desc" data-label="Description"><div class="desc-clamp"></div></td>
+    <td class="col-author"></td>
+    <td class="col-type"><span class="type-badge"></span></td>
+    <td class="col-date"></td>
+    <td class="col-rating"></td>
+    <td class="col-desc"><div class="desc-clamp"></div></td>
     <td class="col-actions"><button class="row-delete" title="Delete" aria-label="Delete book">✕</button></td>
   `;
 
-  // User content goes through textContent to avoid any HTML injection.
-  tr.querySelector('.col-title').textContent = book.title;
-  tr.querySelector('.col-author').textContent = book.author;
+  // On mobile, cap text fields at MAX_CELL chars; full text stays in the
+  // detail card. User content goes through textContent to avoid HTML injection.
+  const fit = (text) => (MOBILE.matches ? truncate(text) : String(text ?? ''));
+
+  const titleEl = tr.querySelector('.col-title');
+  titleEl.textContent = fit(book.title);
+  titleEl.title = book.title;
+
+  const authorEl = tr.querySelector('.col-author');
+  authorEl.textContent = fit(book.author);
+  authorEl.title = book.author;
+
   tr.querySelector('.type-badge').textContent = TYPE_LABELS[book.type] ?? TYPE_LABELS.book;
   tr.querySelector('.col-date').textContent = book.date || '';
 
@@ -113,7 +129,7 @@ function row(book) {
   }
 
   const descCell = tr.querySelector('.col-desc');
-  descCell.querySelector('.desc-clamp').textContent = book.description || '';
+  descCell.querySelector('.desc-clamp').textContent = fit(book.description || '');
   if (book.description) descCell.title = book.description;
 
   // Click the row to open details; the delete button must not also open them.
@@ -172,8 +188,6 @@ function updateHeaders() {
     if (arrow) arrow.textContent = state.order === 'asc' ? '↑' : '↓';
     th.setAttribute('aria-sort', active ? (state.order === 'asc' ? 'ascending' : 'descending') : 'none');
   }
-  els.mSort.value = state.sort;
-  els.mOrderIcon.textContent = state.order === 'asc' ? '↑' : '↓';
 }
 
 async function remove(book) {
@@ -190,15 +204,8 @@ async function remove(book) {
 
 els.detailClose.addEventListener('click', closeDetail);
 
-// Mobile sort control (mirrors the desktop header-click sorting).
-els.mSort.addEventListener('change', () => {
-  setState({ sort: els.mSort.value });
-  load();
-});
-els.mOrder.addEventListener('click', () => {
-  setState({ order: state.order === 'asc' ? 'desc' : 'asc' });
-  load();
-});
+// Re-render when crossing the mobile breakpoint so truncation updates.
+MOBILE.addEventListener('change', () => render(lastBooks));
 
 // Click a column heading to sort by it; click the active one again to flip.
 for (const th of els.headers) {
