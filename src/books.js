@@ -104,3 +104,31 @@ function compare(a, b, key) {
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
+
+export const DEFAULT_PAGE_SIZE = 25;
+const MAX_PAGE_SIZE = 200;
+
+/**
+ * Slices an array into a page. Tolerant of bad input: clamps the page into
+ * range and the limit to [1, MAX_PAGE_SIZE]. Returns the page plus metadata.
+ */
+export function paginate(items, { page, limit } = {}) {
+  const rawLimit = Number(limit);
+  const safeLimit = Number.isFinite(rawLimit) && rawLimit > 0
+    ? Math.min(Math.floor(rawLimit), MAX_PAGE_SIZE)
+    : DEFAULT_PAGE_SIZE;
+
+  const total = items.length;
+  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+
+  const rawPage = Number(page);
+  const safePage = Number.isFinite(rawPage)
+    ? Math.min(Math.max(1, Math.floor(rawPage)), totalPages)
+    : 1;
+
+  const start = (safePage - 1) * safeLimit;
+  return {
+    data: items.slice(start, start + safeLimit),
+    meta: { total, page: safePage, limit: safeLimit, totalPages },
+  };
+}

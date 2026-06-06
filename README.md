@@ -58,15 +58,31 @@ Copy `.env.example` to `.env` (or set the variables in your host):
 
 ## REST API
 
-All responses use the envelope `{ success, data, error }`.
+All responses use the envelope `{ success, data, error }`. Paginated `GET`
+responses also include `meta: { total, page, limit, totalPages }`.
 
 | Method   | Path              | Body / Query                                            |
 | -------- | ----------------- | ------------------------------------------------------- |
-| `GET`    | `/api/books`      | `?search=&sort=date\|title\|author\|rating\|type&order=asc\|desc` |
+| `GET`    | `/api/books`      | `?search=&sort=date\|title\|author\|rating\|type&order=asc\|desc&page=&limit=` |
 | `POST`   | `/api/books`      | `{ title*, author*, date?, rating?, type?, description? }` |
 | `DELETE` | `/api/books/:id`  | —                                                       |
 
-`*` required. `date` is `YYYY-MM-DD` (defaults to today). `rating` is `0`–`5` in half-star steps (e.g. `4.5`) or empty for unrated. `type` is `book`, `ebook` or `audiobook` (defaults to `book`).
+`*` required. `date` is `YYYY-MM-DD` (defaults to today). `rating` is `0`–`5` in half-star steps (e.g. `4.5`) or empty for unrated. `type` is `book`, `ebook` or `audiobook` (defaults to `book`). `page` is 1-based (out-of-range pages clamp to the last page); `limit` defaults to `25` (max `200`).
+
+## Stress / sample data
+
+Generate sample books to test pagination and performance:
+
+```bash
+npm run seed:stress -- 400          # append 400 random books
+node scripts/generate-books.mjs 50  # or call it directly
+```
+
+In Docker, run it against the mounted volume:
+
+```bash
+docker exec reads node scripts/generate-books.mjs 400
+```
 
 ## Deploy with Docker
 

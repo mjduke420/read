@@ -70,6 +70,19 @@ test('GET supports search filtering', async () => {
   assert.equal(res.body.data[0].title, 'Hyperion');
 });
 
+test('GET paginates and returns meta', async () => {
+  for (let i = 0; i < 30; i++) {
+    await request(app).post('/api/books').send({ title: `Book ${String(i).padStart(2, '0')}`, author: 'A' });
+  }
+  const page1 = await request(app).get('/api/books').query({ sort: 'title', order: 'asc', page: 1, limit: 25 });
+  assert.equal(page1.body.data.length, 25);
+  assert.deepEqual(page1.body.meta, { total: 30, page: 1, limit: 25, totalPages: 2 });
+
+  const page2 = await request(app).get('/api/books').query({ sort: 'title', order: 'asc', page: 2, limit: 25 });
+  assert.equal(page2.body.data.length, 5);
+  assert.equal(page2.body.meta.page, 2);
+});
+
 test('GET supports sorting by title descending', async () => {
   await request(app).post('/api/books').send({ title: 'Alpha', author: 'A' });
   await request(app).post('/api/books').send({ title: 'Zeta', author: 'Z' });

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createBook, searchBooks, sortBooks, BookInputSchema } from '../src/books.js';
+import { createBook, searchBooks, sortBooks, paginate, BookInputSchema } from '../src/books.js';
 
 test('createBook builds a record with an id and trimmed fields', () => {
   const book = createBook({ title: '  Dune  ', author: ' Herbert ', date: '2024-02-01', rating: '4' });
@@ -118,4 +118,42 @@ test('sortBooks does not mutate the input array', () => {
 
 test('sortBooks ignores unknown sort keys', () => {
   assert.deepEqual(sortBooks(sample, 'nope').map((b) => b.id), ['1', '2', '3']);
+});
+
+const many = Array.from({ length: 95 }, (_, i) => ({ id: String(i) }));
+
+test('paginate returns the requested page and metadata', () => {
+  const { data, meta } = paginate(many, { page: 2, limit: 25 });
+  assert.equal(data.length, 25);
+  assert.equal(data[0].id, '25');
+  assert.deepEqual(meta, { total: 95, page: 2, limit: 25, totalPages: 4 });
+});
+
+test('paginate returns a short final page', () => {
+  const { data, meta } = paginate(many, { page: 4, limit: 25 });
+  assert.equal(data.length, 20); // 95 - 75
+  assert.equal(meta.page, 4);
+});
+
+test('paginate clamps an out-of-range page to the last page', () => {
+  const { data, meta } = paginate(many, { page: 999, limit: 25 });
+  assert.equal(meta.page, 4);
+  assert.equal(data[0].id, '75');
+});
+
+test('paginate clamps page below 1 and bad input to page 1', () => {
+  assert.equal(paginate(many, { page: 0, limit: 25 }).meta.page, 1);
+  assert.equal(paginate(many, { page: 'abc', limit: 25 }).meta.page, 1);
+});
+
+test('paginate falls back to the default size when limit is invalid', () => {
+  const { data, meta } = paginate(many, { page: 1, limit: 'nope' });
+  assert.equal(meta.limit, 25);
+  assert.equal(data.length, 25);
+});
+
+test('paginate reports totalPages = 1 for an empty list', () => {
+  const { data, meta } = paginate([], { page: 1, limit: 25 });
+  assert.deepEqual(data, []);
+  assert.deepEqual(meta, { total: 0, page: 1, limit: 25, totalPages: 1 });
 });

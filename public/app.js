@@ -24,7 +24,14 @@ const els = {
   detailBackdrop: document.getElementById('detail-backdrop'),
   ratingSelect: document.getElementById('rating-select'),
   clearRatingBtn: document.getElementById('clear-rating'),
+  pagination: document.getElementById('pagination'),
+  prevBtn: document.getElementById('prev-page'),
+  nextBtn: document.getElementById('next-page'),
+  pageInfo: document.getElementById('page-info'),
 };
+
+// Books per page (server-side pagination keeps the grid from scrolling forever).
+const PAGE_SIZE = 25;
 
 // On narrow screens, long cell values are truncated in the grid; the full
 // text is still available in the detail card when a row is selected.
@@ -37,7 +44,7 @@ function truncate(text) {
 let lastBooks = [];
 
 // UI state. Always replaced, never mutated in place.
-let state = { search: '', sort: 'date', order: 'desc' };
+let state = { search: '', sort: 'date', order: 'desc', page: 1 };
 let selectedId = null;
 
 function setState(patch) {
@@ -66,17 +73,42 @@ async function load() {
     search: state.search,
     sort: state.sort,
     order: state.order,
+    page: String(state.page),
+    limit: String(PAGE_SIZE),
   });
   try {
     const res = await fetch(`${API}?${params}`);
     const body = await res.json();
     if (!body.success) throw new Error(body.error || 'Failed to load books');
+    // The server clamps the page into range; keep local state in sync.
+    if (body.meta) state = { ...state, page: body.meta.page };
     render(body.data);
+    updateCount(body.meta);
+    renderPagination(body.meta);
   } catch (err) {
     els.tbody.innerHTML = '';
     els.count.textContent = `Could not load books: ${err.message}`;
+    els.pagination.classList.add('hidden');
   }
   updateHeaders();
+}
+
+function updateCount(meta) {
+  const total = meta?.total ?? 0;
+  els.count.textContent = total === 1 ? '1 book' : `${total} books`;
+}
+
+function renderPagination(meta) {
+  if (!meta) {
+    els.pagination.classList.add('hidden');
+    return;
+  }
+  const { page, totalPages, total } = meta;
+  els.pageInfo.textContent = `Page ${page} of ${totalPages}`;
+  els.prevBtn.disabled = page <= 1;
+  els.nextBtn.disabled = page >= totalPages;
+  // Only show controls when there is more than one page.
+  els.pagination.classList.toggle('hidden', total === 0 || totalPages <= 1);
 }
 
 function render(books) {
@@ -85,7 +117,6 @@ function render(books) {
   const isEmpty = books.length === 0;
   els.empty.classList.toggle('hidden', !isEmpty);
   els.table.classList.toggle('hidden', isEmpty);
-  els.count.textContent = books.length === 1 ? '1 book' : `${books.length} books`;
   for (const book of books) {
     els.tbody.appendChild(row(book));
   }
@@ -233,6 +264,18 @@ async function remove(book) {
 els.detailClose.addEventListener('click', closeDetail);
 els.detailBackdrop.addEventListener('click', closeDetail);
 
+// Pagination controls.
+els.prevBtn.addEventListener('click', () => {
+  if (state.page > 1) {
+    setState({ page: state.page - 1 });
+    load();
+  }
+});
+els.nextBtn.addEventListener('click', () => {
+  setState({ page: state.page + 1 }); // server clamps to the last page
+  load();
+});
+
 // Re-render when crossing the mobile breakpoint so truncation updates.
 MOBILE.addEventListener('change', () => render(lastBooks));
 
@@ -241,9 +284,9 @@ for (const th of els.headers) {
   th.addEventListener('click', () => {
     const key = th.dataset.key;
     if (state.sort === key) {
-      setState({ order: state.order === 'asc' ? 'desc' : 'asc' });
+      setState({ order: state.order === 'asc' ? 'desc' : 'asc', page: 1 });
     } else {
-      setState({ sort: key, order: 'asc' });
+      setState({ sort: key, order: 'asc', page: 1 });
     }
     load();
   });
@@ -328,6 +371,7 @@ els.form.addEventListener('submit', async (e) => {
     els.form.reset();
     els.formMsg.textContent = `Added “${body.data.title}”.`;
     els.formMsg.classList.add('success');
+    setState({ page: 1 }); // jump to the first page to see the new book
     load();
   } catch (err) {
     els.formMsg.textContent = err.message;
@@ -340,7 +384,7 @@ let searchTimer;
 els.search.addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
-    setState({ search: els.search.value });
+    setState({ search: els.search.value, page: 1 });
     load();
   }, 200);
 });

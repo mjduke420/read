@@ -1,21 +1,22 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { createBook, searchBooks, sortBooks } from './books.js';
+import { createBook, searchBooks, sortBooks, paginate } from './books.js';
 
-// Consistent response envelope: { success, data, error }.
-const ok = (data) => ({ success: true, data, error: null });
+// Consistent response envelope: { success, data, error[, meta] }.
+const ok = (data, meta) => ({ success: true, data, error: null, ...(meta ? { meta } : {}) });
 const fail = (error) => ({ success: false, data: null, error });
 
 export function createBooksRouter(store) {
   const router = Router();
 
-  // GET /api/books?search=&sort=&order=asc|desc
+  // GET /api/books?search=&sort=&order=asc|desc&page=&limit=
   router.get('/', async (req, res, next) => {
     try {
       const all = await store.readAll();
       const filtered = searchBooks(all, req.query.search);
       const sorted = sortBooks(filtered, req.query.sort, req.query.order);
-      res.json(ok(sorted));
+      const { data, meta } = paginate(sorted, { page: req.query.page, limit: req.query.limit });
+      res.json(ok(data, meta));
     } catch (err) {
       next(err);
     }
