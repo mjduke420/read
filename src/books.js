@@ -83,9 +83,13 @@ export function updateBook(id, input) {
   return { id, ...buildBookFields(input) };
 }
 
-const SEARCH_FIELDS = ['title', 'author', 'description', 'type'];
+const SEARCH_FIELDS = ['title', 'author', 'description', 'type', 'date'];
 
-/** Case-insensitive substring search across title, author and description. */
+/**
+ * Case-insensitive substring search across title, author, description, type and
+ * date. Because the date is stored as YYYY-MM-DD, a query like "2026" matches the
+ * year the book was read (and "2026-03" matches a partial date).
+ */
 export function searchBooks(books, query) {
   const q = String(query ?? '').trim().toLowerCase();
   if (!q) return books;

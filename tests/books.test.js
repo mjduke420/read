@@ -148,6 +148,15 @@ test('searchBooks matches on type', () => {
   assert.equal(res[0].id, '2');
 });
 
+test('searchBooks matches the year the book was read', () => {
+  // All sample books have 2024-* read dates.
+  assert.equal(searchBooks(sample, '2024').length, 3);
+  // A partial date narrows to the single March record.
+  assert.deepEqual(searchBooks(sample, '2024-03').map((b) => b.id), ['2']);
+  // A year with no matches returns nothing.
+  assert.equal(searchBooks(sample, '2030').length, 0);
+});
+
 test('sortBooks does not mutate the input array', () => {
   const before = sample.map((b) => b.id);
   sortBooks(sample, 'title', 'desc');
