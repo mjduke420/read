@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createBook, updateBook, searchBooks, sortBooks, paginate, BookInputSchema } from '../src/books.js';
+import { createBook, updateBook, searchBooks, filterBooks, sortBooks, paginate, BookInputSchema } from '../src/books.js';
 
 test('createBook builds a record with an id and trimmed fields', () => {
   const book = createBook({ title: '  Dune  ', author: ' Herbert ', date: '2024-02-01', rating: '4' });
@@ -59,6 +59,11 @@ test('createBook coerces checkbox/string truthy values for dnf', () => {
   assert.equal(createBook({ title: 'X', author: 'Y', dnf: 'on' }).dnf, true);
   assert.equal(createBook({ title: 'X', author: 'Y', dnf: true }).dnf, true);
   assert.equal(createBook({ title: 'X', author: 'Y', dnf: 'false' }).dnf, false);
+});
+
+test('createBook defaults spoilers to false and coerces truthy values', () => {
+  assert.equal(createBook({ title: 'X', author: 'Y' }).spoilers, false);
+  assert.equal(createBook({ title: 'X', author: 'Y', spoilers: 'on' }).spoilers, true);
 });
 
 test('createBook rejects an invalid type', () => {
@@ -140,6 +145,44 @@ test('sortBooks by dnf puts Read before DNF ascending', () => {
     { id: 'c', dnf: true },
   ];
   assert.deepEqual(sortBooks(items, 'dnf', 'asc').map((b) => b.id), ['b', 'a', 'c']);
+});
+
+test('sortBooks by spoilers puts spoiler-free first ascending', () => {
+  const items = [
+    { id: 'a', spoilers: true },
+    { id: 'b', spoilers: false },
+  ];
+  assert.deepEqual(sortBooks(items, 'spoilers', 'asc').map((b) => b.id), ['b', 'a']);
+});
+
+const filterSet = [
+  { id: '1', title: 'Dune', author: 'Herbert', date: '2024-01-01', rating: 5, type: 'book', dnf: false, spoilers: true, description: 'desert epic' },
+  { id: '2', title: 'Hyperion', author: 'Simmons', date: '2023-06-01', rating: null, type: 'ebook', dnf: true, spoilers: false, description: 'pilgrims' },
+  { id: '3', title: 'Dune Messiah', author: 'Herbert', date: '2024-09-01', rating: 4, type: 'audiobook', dnf: false, spoilers: false, description: 'sequel' },
+];
+
+test('filterBooks with no filters returns everything', () => {
+  assert.equal(filterBooks(filterSet, {}).length, 3);
+  assert.equal(filterBooks(filterSet, { title: '', author: '' }).length, 3);
+});
+
+test('filterBooks matches text columns by substring (case-insensitive)', () => {
+  assert.deepEqual(filterBooks(filterSet, { title: 'dune' }).map((b) => b.id), ['1', '3']);
+  assert.deepEqual(filterBooks(filterSet, { author: 'herb' }).map((b) => b.id), ['1', '3']);
+});
+
+test('filterBooks filters by type, date, rating, dnf and spoilers', () => {
+  assert.deepEqual(filterBooks(filterSet, { type: 'ebook' }).map((b) => b.id), ['2']);
+  assert.deepEqual(filterBooks(filterSet, { date: '2024' }).map((b) => b.id), ['1', '3']);
+  assert.deepEqual(filterBooks(filterSet, { rating: 'unrated' }).map((b) => b.id), ['2']);
+  assert.deepEqual(filterBooks(filterSet, { rating: '4' }).map((b) => b.id), ['3']);
+  assert.deepEqual(filterBooks(filterSet, { dnf: 'dnf' }).map((b) => b.id), ['2']);
+  assert.deepEqual(filterBooks(filterSet, { spoilers: 'spoilers' }).map((b) => b.id), ['1']);
+  assert.deepEqual(filterBooks(filterSet, { spoilers: 'free' }).map((b) => b.id), ['2', '3']);
+});
+
+test('filterBooks combines multiple filters (AND)', () => {
+  assert.deepEqual(filterBooks(filterSet, { author: 'herbert', spoilers: 'free' }).map((b) => b.id), ['3']);
 });
 
 test('searchBooks matches on type', () => {

@@ -38,6 +38,15 @@ const els = {
   prevBtn: document.getElementById('prev-page'),
   nextBtn: document.getElementById('next-page'),
   pageInfo: document.getElementById('page-info'),
+  detailSpoilers: document.querySelector('#detail .detail-spoilers'),
+  spoilersToggle: document.getElementById('spoilers-toggle'),
+  spoilersState: document.getElementById('spoilers-state'),
+  editSpoilers: document.getElementById('edit-spoilers'),
+  editSpoilersState: document.getElementById('edit-spoilers-state'),
+  formToggle: document.getElementById('form-toggle'),
+  formPanel: document.querySelector('.form-panel'),
+  filterInputs: document.querySelectorAll('.filter-row [data-filter]'),
+  clearFilters: document.getElementById('clear-filters'),
 };
 
 // Books per page (server-side pagination keeps the grid from scrolling forever).
@@ -54,7 +63,7 @@ function truncate(text) {
 let lastBooks = [];
 
 // UI state. Always replaced, never mutated in place.
-let state = { search: '', sort: 'date', order: 'desc', page: 1 };
+let state = { search: '', sort: 'date', order: 'desc', page: 1, filters: {} };
 let selectedId = null;
 let currentBook = null; // the book shown in the detail drawer (for editing)
 
@@ -87,6 +96,14 @@ function statusBadge(dnf) {
   return span;
 }
 
+// Spoilers pill. Returns a fresh element.
+function spoilersBadge(spoilers) {
+  const span = document.createElement('span');
+  span.className = `status-badge ${spoilers ? 'spoilers-yes' : 'spoilers-no'}`;
+  span.textContent = spoilers ? 'Spoilers' : 'Spoiler-free';
+  return span;
+}
+
 async function load() {
   const params = new URLSearchParams({
     search: state.search,
@@ -95,6 +112,10 @@ async function load() {
     page: String(state.page),
     limit: String(PAGE_SIZE),
   });
+  // Per-column filters -> f_title, f_author, ... (description -> f_desc).
+  for (const [field, value] of Object.entries(state.filters)) {
+    if (value) params.set(`f_${field === 'description' ? 'desc' : field}`, value);
+  }
   try {
     const res = await fetch(`${API}?${params}`);
     const body = await res.json();
@@ -159,6 +180,7 @@ function row(book) {
     <td class="col-date"></td>
     <td class="col-rating"></td>
     <td class="col-status"></td>
+    <td class="col-spoilers"></td>
     <td class="col-desc"><div class="desc-clamp"></div></td>
     <td class="col-actions"><button class="row-delete" title="Delete" aria-label="Delete book">✕</button></td>
   `;
@@ -189,6 +211,7 @@ function row(book) {
   }
 
   tr.querySelector('.col-status').appendChild(statusBadge(book.dnf));
+  tr.querySelector('.col-spoilers').appendChild(spoilersBadge(book.spoilers));
 
   const descCell = tr.querySelector('.col-desc');
   descCell.querySelector('.desc-clamp').textContent = fit(book.description || '');
@@ -247,6 +270,9 @@ function renderDetail(book) {
   els.detailStatus.innerHTML = '';
   els.detailStatus.appendChild(statusBadge(book.dnf));
 
+  els.detailSpoilers.innerHTML = '';
+  els.detailSpoilers.appendChild(spoilersBadge(book.spoilers));
+
   els.detailDesc.textContent = book.description || 'No description.';
   els.detailDelete.onclick = () => remove(book);
   els.detail.classList.remove('hidden');
@@ -301,6 +327,8 @@ function openEdit() {
   f.elements.rating.value = currentBook.rating == null ? '' : String(currentBook.rating);
   els.editDnf.checked = !!currentBook.dnf;
   els.editDnfState.textContent = currentBook.dnf ? 'DNF' : 'Read';
+  els.editSpoilers.checked = !!currentBook.spoilers;
+  els.editSpoilersState.textContent = currentBook.spoilers ? 'Spoilers' : 'Spoiler-free';
   f.elements.description.value = currentBook.description || '';
   els.detailEditMsg.textContent = '';
   els.detailEditMsg.className = 'detail-edit-msg form-msg';
@@ -318,6 +346,9 @@ els.detailEdit.addEventListener('click', openEdit);
 els.detailCancel.addEventListener('click', cancelEdit);
 els.editDnf.addEventListener('change', () => {
   els.editDnfState.textContent = els.editDnf.checked ? 'DNF' : 'Read';
+});
+els.editSpoilers.addEventListener('change', () => {
+  els.editSpoilersState.textContent = els.editSpoilers.checked ? 'Spoilers' : 'Spoiler-free';
 });
 
 els.detailEditForm.addEventListener('submit', async (e) => {
@@ -431,16 +462,21 @@ els.clearRatingBtn.addEventListener('click', () => {
   updateStarWidget('');
 });
 
-// DNF toggle: reflect on/off as "DNF" / "Read".
+// Add-form toggles: reflect on/off state in their labels.
 function updateDnfLabel() {
   els.dnfState.textContent = els.dnfToggle.checked ? 'DNF' : 'Read';
 }
+function updateSpoilersLabel() {
+  els.spoilersState.textContent = els.spoilersToggle.checked ? 'Spoilers' : 'Spoiler-free';
+}
 els.dnfToggle.addEventListener('change', updateDnfLabel);
+els.spoilersToggle.addEventListener('change', updateSpoilersLabel);
 
 els.form.addEventListener('reset', () => {
   setTimeout(() => {
     updateStarWidget('');
     updateDnfLabel();
+    updateSpoilersLabel();
   }, 0);
 });
 
@@ -479,5 +515,51 @@ els.search.addEventListener('input', () => {
     load();
   }, 200);
 });
+
+// --- Per-column filters ---------------------------------------------------
+// Read every filter control each time so concurrent changes can't race.
+function readFilters() {
+  const filters = {};
+  els.filterInputs.forEach((el) => {
+    if (el.value) filters[el.dataset.filter] = el.value;
+  });
+  return filters;
+}
+let filterTimer;
+function applyFilters(debounce) {
+  const run = () => {
+    setState({ filters: readFilters(), page: 1 });
+    load();
+  };
+  if (debounce) {
+    clearTimeout(filterTimer);
+    filterTimer = setTimeout(run, 200);
+  } else {
+    run();
+  }
+}
+els.filterInputs.forEach((el) => {
+  const isText = el.tagName !== 'SELECT';
+  el.addEventListener(isText ? 'input' : 'change', () => applyFilters(isText));
+});
+els.clearFilters.addEventListener('click', () => {
+  els.filterInputs.forEach((el) => {
+    el.value = '';
+  });
+  setState({ filters: {}, page: 1 });
+  load();
+});
+
+// --- Collapsible add form (to show more of the grid) ----------------------
+function setFormCollapsed(collapsed) {
+  els.formPanel.classList.toggle('collapsed', collapsed);
+  els.formToggle.setAttribute('aria-expanded', String(!collapsed));
+  els.formToggle.setAttribute('aria-label', collapsed ? 'Expand add form' : 'Collapse add form');
+  localStorage.setItem('addFormCollapsed', collapsed ? '1' : '0');
+}
+els.formToggle.addEventListener('click', () => {
+  setFormCollapsed(!els.formPanel.classList.contains('collapsed'));
+});
+setFormCollapsed(localStorage.getItem('addFormCollapsed') === '1');
 
 load();

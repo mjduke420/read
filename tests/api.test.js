@@ -56,6 +56,31 @@ test('POST /api/books stores the dnf flag and defaults to false', async () => {
   assert.equal(read.body.data.dnf, false);
 });
 
+test('POST /api/books stores the spoilers flag and defaults to false', async () => {
+  const spoiled = await request(app).post('/api/books').send({ title: 'Twist', author: 'A', spoilers: 'on' });
+  assert.equal(spoiled.body.data.spoilers, true);
+
+  const clean = await request(app).post('/api/books').send({ title: 'Safe', author: 'B' });
+  assert.equal(clean.body.data.spoilers, false);
+});
+
+test('GET supports per-column filters', async () => {
+  await request(app).post('/api/books').send({ title: 'Dune', author: 'Herbert', type: 'book', spoilers: 'on' });
+  await request(app).post('/api/books').send({ title: 'Hyperion', author: 'Simmons', type: 'ebook' });
+
+  const byType = await request(app).get('/api/books').query({ f_type: 'ebook' });
+  assert.equal(byType.body.data.length, 1);
+  assert.equal(byType.body.data[0].title, 'Hyperion');
+
+  const byTitle = await request(app).get('/api/books').query({ f_title: 'dune' });
+  assert.equal(byTitle.body.data.length, 1);
+  assert.equal(byTitle.body.data[0].title, 'Dune');
+
+  const bySpoilers = await request(app).get('/api/books').query({ f_spoilers: 'spoilers' });
+  assert.equal(bySpoilers.body.data.length, 1);
+  assert.equal(bySpoilers.body.data[0].title, 'Dune');
+});
+
 test('POST /api/books rejects an invalid type with 400', async () => {
   const res = await request(app).post('/api/books').send({ title: 'X', author: 'Y', type: 'vinyl' });
   assert.equal(res.status, 400);

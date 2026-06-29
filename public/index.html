@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=13" />
+    <link rel="stylesheet" href="styles.css?v=14" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
   </head>
   <body>
@@ -18,8 +18,11 @@
 
     <main class="layout">
       <section class="panel form-panel">
-        <h2>Add a book</h2>
-        <form id="add-form" autocomplete="off" novalidate>
+        <div class="form-header">
+          <h2>Add a book</h2>
+          <button id="form-toggle" class="form-toggle" type="button" aria-expanded="true" aria-label="Collapse add form">▾</button>
+        </div>
+        <form id="add-form" class="add-form" autocomplete="off" novalidate>
           <label>
             Title <span class="req">*</span>
             <input type="text" name="title" maxlength="500" required />
@@ -28,20 +31,18 @@
             Author <span class="req">*</span>
             <input type="text" name="author" maxlength="300" required />
           </label>
-          <div class="row">
-            <label>
-              Date
-              <input type="date" name="date" />
-            </label>
-            <label>
-              Type
-              <select name="type">
-                <option value="book">📖 Book</option>
-                <option value="ebook">📱 eBook</option>
-                <option value="audiobook">🎧 Audiobook</option>
-              </select>
-            </label>
-          </div>
+          <label>
+            Date
+            <input type="date" name="date" />
+          </label>
+          <label>
+            Type
+            <select name="type">
+              <option value="book">📖 Book</option>
+              <option value="ebook">📱 eBook</option>
+              <option value="audiobook">🎧 Audiobook</option>
+            </select>
+          </label>
           <label class="rating-label">
             Rating
             <select name="rating" id="rating-select" class="visually-hidden">
@@ -89,12 +90,22 @@
               <span class="toggle-state" id="dnf-state">Read</span>
             </span>
           </label>
-          <label>
-            Description
-            <textarea name="description" rows="4" maxlength="5000"></textarea>
+          <label class="toggle-field">
+            Spoilers
+            <span class="toggle-row">
+              <input type="checkbox" name="spoilers" id="spoilers-toggle" class="toggle-input toggle-spoilers" />
+              <span class="toggle-switch" aria-hidden="true"></span>
+              <span class="toggle-state" id="spoilers-state">Spoiler-free</span>
+            </span>
           </label>
-          <button type="submit" class="primary">Add book</button>
-          <p id="form-msg" class="form-msg" role="status" aria-live="polite"></p>
+          <label class="full">
+            Description
+            <textarea name="description" rows="2" maxlength="5000"></textarea>
+          </label>
+          <div class="full add-form-actions">
+            <button type="submit" class="primary">Add book</button>
+            <p id="form-msg" class="form-msg" role="status" aria-live="polite"></p>
+          </div>
         </form>
       </section>
 
@@ -130,8 +141,54 @@
                 <th data-key="date" scope="col">Date <span class="arrow"></span></th>
                 <th data-key="rating" scope="col">Rating <span class="arrow"></span></th>
                 <th data-key="dnf" scope="col">Status <span class="arrow"></span></th>
+                <th data-key="spoilers" scope="col">Spoilers <span class="arrow"></span></th>
                 <th scope="col">Description</th>
                 <th scope="col"><span class="visually-hidden">Actions</span></th>
+              </tr>
+              <tr class="filter-row">
+                <td><input type="text" class="filter-input" data-filter="title" placeholder="Filter…" aria-label="Filter by title" /></td>
+                <td><input type="text" class="filter-input" data-filter="author" placeholder="Filter…" aria-label="Filter by author" /></td>
+                <td>
+                  <select class="filter-input" data-filter="type" aria-label="Filter by type">
+                    <option value="">All</option>
+                    <option value="book">Book</option>
+                    <option value="ebook">eBook</option>
+                    <option value="audiobook">Audiobook</option>
+                  </select>
+                </td>
+                <td><input type="text" class="filter-input" data-filter="date" placeholder="e.g. 2024" aria-label="Filter by date" /></td>
+                <td>
+                  <select class="filter-input" data-filter="rating" aria-label="Filter by rating">
+                    <option value="">Any</option>
+                    <option value="unrated">Unrated</option>
+                    <option value="5">5</option>
+                    <option value="4.5">4.5</option>
+                    <option value="4">4</option>
+                    <option value="3.5">3.5</option>
+                    <option value="3">3</option>
+                    <option value="2.5">2.5</option>
+                    <option value="2">2</option>
+                    <option value="1.5">1.5</option>
+                    <option value="1">1</option>
+                    <option value="0.5">0.5</option>
+                  </select>
+                </td>
+                <td>
+                  <select class="filter-input" data-filter="dnf" aria-label="Filter by status">
+                    <option value="">All</option>
+                    <option value="read">Read</option>
+                    <option value="dnf">DNF</option>
+                  </select>
+                </td>
+                <td>
+                  <select class="filter-input" data-filter="spoilers" aria-label="Filter by spoilers">
+                    <option value="">All</option>
+                    <option value="free">Spoiler-free</option>
+                    <option value="spoilers">Spoilers</option>
+                  </select>
+                </td>
+                <td><input type="text" class="filter-input" data-filter="description" placeholder="Filter…" aria-label="Filter by description" /></td>
+                <td class="filter-clear-cell"><button id="clear-filters" class="filter-clear" type="button" title="Clear all filters" aria-label="Clear all filters">✕</button></td>
               </tr>
             </thead>
             <tbody id="tbody" aria-live="polite"></tbody>
@@ -163,6 +220,7 @@
           <span class="detail-date"></span>
           <span class="detail-rating"></span>
           <span class="detail-status"></span>
+          <span class="detail-spoilers"></span>
         </div>
         <p class="detail-desc"></p>
         <div class="detail-actions">
@@ -219,6 +277,14 @@
             <span class="toggle-state" id="edit-dnf-state">Read</span>
           </span>
         </label>
+        <label class="toggle-field">
+          Spoilers
+          <span class="toggle-row">
+            <input type="checkbox" name="spoilers" id="edit-spoilers" class="toggle-input toggle-spoilers" />
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-state" id="edit-spoilers-state">Spoiler-free</span>
+          </span>
+        </label>
         <label>
           Description
           <textarea name="description" rows="4" maxlength="5000"></textarea>
@@ -231,6 +297,6 @@
       </form>
     </div>
 
-    <script src="app.js?v=13" type="module"></script>
+    <script src="app.js?v=14" type="module"></script>
   </body>
 </html>

@@ -94,17 +94,15 @@ body {
   max-width: 1300px;
   margin: 0 auto;
   padding: 0 24px 60px;
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 32px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 @media (max-width: 960px) {
   .layout {
-    grid-template-columns: 1fr;
     padding: 0 16px 40px;
-    gap: 24px;
+    gap: 20px;
   }
 }
 
@@ -123,18 +121,84 @@ body {
   border-color: var(--panel-border-hover);
 }
 .form-panel {
-  position: sticky;
-  top: 32px;
+  position: static;
 }
 .panel h2 {
-  margin-top: 0;
+  margin: 0;
   font-family: 'Outfit', sans-serif;
   font-size: 1.4rem;
   font-weight: 600;
-  margin-bottom: 24px;
   color: #fff;
+}
+
+/* Add-form header with collapse toggle */
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   border-bottom: 1px solid var(--panel-border);
-  padding-bottom: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+}
+.form-toggle {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1;
+  transition: var(--transition);
+}
+.form-toggle:hover {
+  color: #fff;
+  border-color: var(--accent-secondary);
+}
+.form-panel.collapsed .form-toggle {
+  transform: rotate(-90deg);
+}
+.form-panel.collapsed .form-header {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.form-panel.collapsed .add-form {
+  display: none;
+}
+
+/* Horizontal add form so the grid below gets full width */
+.add-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px 18px;
+  align-items: end;
+}
+.add-form > label,
+.add-form > .rating-label,
+.add-form > .toggle-field {
+  margin-bottom: 0;
+}
+.add-form .rating-label {
+  grid-column: span 2;
+}
+.add-form .full {
+  grid-column: 1 / -1;
+}
+.add-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.add-form-actions .primary {
+  width: auto;
+  min-width: 160px;
+  margin-top: 0;
+}
+.add-form-actions .form-msg {
+  margin: 0;
 }
 
 /* Form Styles */
@@ -514,6 +578,57 @@ button.ghost:hover {
   background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
+.col-spoilers {
+  white-space: nowrap;
+}
+.spoilers-yes {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.spoilers-no {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--panel-border);
+}
+
+/* Per-column filter row under the headers */
+.filter-row td {
+  padding: 8px 12px;
+  background: rgba(15, 17, 28, 0.7);
+  border-bottom: 1px solid var(--panel-border);
+  vertical-align: middle;
+}
+.filter-input {
+  width: 100%;
+  margin-top: 0;
+  padding: 7px 10px;
+  font-size: 0.82rem;
+  background: rgba(10, 11, 16, 0.85);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--text);
+}
+.filter-input:focus {
+  outline: none;
+  border-color: var(--accent-secondary);
+}
+.filter-clear-cell {
+  text-align: right;
+}
+.filter-clear {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+.filter-clear:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
 
 /* DNF on/off toggle in the Add form */
 .toggle-row {
@@ -553,6 +668,10 @@ button.ghost:hover {
 .toggle-input:checked + .toggle-switch {
   background: rgba(245, 158, 11, 0.5);
   border-color: rgba(245, 158, 11, 0.6);
+}
+.toggle-spoilers:checked + .toggle-switch {
+  background: rgba(239, 68, 68, 0.5);
+  border-color: rgba(239, 68, 68, 0.6);
 }
 .toggle-input:checked + .toggle-switch::after {
   transform: translateX(20px);
@@ -1033,17 +1152,23 @@ button.ghost:hover {
   .book-table tbody td {
     padding: 10px 12px;
   }
+  /* Per-column filters are desktop-only; the global search covers mobile. */
+  .filter-row {
+    display: none;
+  }
   /* Hide secondary columns in list view only (grid view keeps them). */
   .table-wrap:not(.view-grid) .col-author,
   .table-wrap:not(.view-grid) .col-type,
   .table-wrap:not(.view-grid) .col-date,
   .table-wrap:not(.view-grid) .col-status,
+  .table-wrap:not(.view-grid) .col-spoilers,
   .table-wrap:not(.view-grid) .col-desc,
   .table-wrap:not(.view-grid) thead th:nth-child(2),
   .table-wrap:not(.view-grid) thead th:nth-child(3),
   .table-wrap:not(.view-grid) thead th:nth-child(4),
   .table-wrap:not(.view-grid) thead th:nth-child(6),
-  .table-wrap:not(.view-grid) thead th:nth-child(7) {
+  .table-wrap:not(.view-grid) thead th:nth-child(7),
+  .table-wrap:not(.view-grid) thead th:nth-child(8) {
     display: none;
   }
   .desc-clamp {
