@@ -23,7 +23,7 @@ test('readAll returns [] when the file does not exist', async () => {
 
 test('writeAll then readAll round-trips records', async () => {
   const books = [
-    { id: '1', title: 'A', author: 'B', date: '2024-01-01', rating: 4, type: 'ebook', dnf: true, description: 'hi' },
+    { id: '1', title: 'A', author: 'B', date: '2024-01-01', rating: 4, type: 'ebook', dnf: true, spoilers: true, description: 'hi' },
   ];
   await store.writeAll(books);
   const read = await store.readAll();
@@ -31,12 +31,13 @@ test('writeAll then readAll round-trips records', async () => {
   assert.deepEqual(read[0], books[0]);
 });
 
-test('rows without a dnf column default to false (Read)', async () => {
+test('rows without dnf/spoilers columns default to false', async () => {
   await store.writeAll([
     { id: '1', title: 'A', author: 'B', date: '2024-01-01', rating: 4, type: 'book', description: 'hi' },
   ]);
   const read = await store.readAll();
   assert.equal(read[0].dnf, false);
+  assert.equal(read[0].spoilers, false);
 });
 
 test('preserves commas, quotes and newlines in the description', async () => {

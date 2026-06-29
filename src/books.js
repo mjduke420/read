@@ -53,6 +53,11 @@ export const BookInputSchema = z.object({
     (v) => v === true || v === 'true' || v === 'on' || v === '1' || v === 'yes',
     z.boolean(),
   ),
+  // "Contains spoilers" flag. Same truthy-coercion as dnf; missing -> false.
+  spoilers: z.preprocess(
+    (v) => v === true || v === 'true' || v === 'on' || v === '1' || v === 'yes',
+    z.boolean(),
+  ),
   description: z.string().trim().max(5000).optional().default(''),
 });
 
@@ -69,6 +74,7 @@ export function buildBookFields(input) {
     rating: parsed.rating ?? null,
     type: parsed.type ?? 'book',
     dnf: parsed.dnf ?? false,
+    spoilers: parsed.spoilers ?? false,
     description: parsed.description ?? '',
   };
 }
@@ -98,7 +104,45 @@ export function searchBooks(books, query) {
   );
 }
 
-export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type', 'dnf']);
+/**
+ * Per-column filtering. `filters` maps a field to a value; empty/absent values
+ * are ignored. Text fields match by case-insensitive substring; type/date match
+ * exact/partial; rating, dnf and spoilers use small controlled vocabularies.
+ */
+export function filterBooks(books, filters = {}) {
+  const active = Object.entries(filters).filter(([, v]) => v != null && String(v).trim() !== '');
+  if (active.length === 0) return books;
+  return books.filter((book) => active.every(([key, value]) => matchesFilter(book, key, value)));
+}
+
+function matchesFilter(book, key, rawValue) {
+  const value = String(rawValue).trim().toLowerCase();
+  switch (key) {
+    case 'title':
+    case 'author':
+    case 'description':
+      return String(book[key] ?? '').toLowerCase().includes(value);
+    case 'type':
+      return String(book.type ?? '').toLowerCase() === value;
+    case 'date':
+      return String(book.date ?? '').toLowerCase().includes(value);
+    case 'rating':
+      if (value === 'unrated') return book.rating == null;
+      return book.rating != null && book.rating === Number(value);
+    case 'dnf':
+      if (value === 'read') return book.dnf === false;
+      if (value === 'dnf') return book.dnf === true;
+      return true;
+    case 'spoilers':
+      if (value === 'free') return book.spoilers === false;
+      if (value === 'spoilers') return book.spoilers === true;
+      return true;
+    default:
+      return true;
+  }
+}
+
+export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type', 'dnf', 'spoilers']);
 
 /** Returns a new sorted array; never mutates the input. */
 export function sortBooks(books, sortKey, order = 'asc') {
@@ -115,6 +159,10 @@ function compare(a, b, key) {
   if (key === 'dnf') {
     // Read (false) before DNF (true) when ascending.
     return (a.dnf ? 1 : 0) - (b.dnf ? 1 : 0);
+  }
+  if (key === 'spoilers') {
+    // Spoiler-free (false) before spoilers (true) when ascending.
+    return (a.spoilers ? 1 : 0) - (b.spoilers ? 1 : 0);
   }
   if (key === 'date') {
     // ISO YYYY-MM-DD sorts correctly as plain strings.

@@ -5,7 +5,7 @@ import { stringify } from 'csv-stringify/sync';
 
 // Canonical column order persisted to disk. `id` is added on top of the
 // user-facing fields so books can be addressed for delete/edit later.
-export const COLUMNS = ['id', 'title', 'author', 'date', 'rating', 'type', 'dnf', 'description'];
+export const COLUMNS = ['id', 'title', 'author', 'date', 'rating', 'type', 'dnf', 'spoilers', 'description'];
 
 // Allowed media types. Rows missing/invalid `type` fall back to 'book' so
 // CSV files written before this column existed remain valid.
@@ -76,8 +76,9 @@ export function createCsvStore(filePath) {
 function normalizeRecord(rec) {
   const rating = rec.rating == null || String(rec.rating).trim() === '' ? null : Number(rec.rating);
   const type = String(rec.type ?? '').trim().toLowerCase();
-  // Rows written before this column existed have no `dnf` -> default false (Read).
+  // Rows written before these columns existed default to false.
   const dnf = String(rec.dnf ?? '').trim().toLowerCase();
+  const spoilers = String(rec.spoilers ?? '').trim().toLowerCase();
   return {
     id: rec.id ?? '',
     title: rec.title ?? '',
@@ -86,6 +87,7 @@ function normalizeRecord(rec) {
     rating: Number.isFinite(rating) ? rating : null,
     type: TYPES.includes(type) ? type : 'book',
     dnf: dnf === 'true' || dnf === '1' || dnf === 'yes',
+    spoilers: spoilers === 'true' || spoilers === '1' || spoilers === 'yes',
     description: rec.description ?? '',
   };
 }

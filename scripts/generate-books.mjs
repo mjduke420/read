@@ -39,6 +39,7 @@ const generated = Array.from({ length: count }, (_, i) =>
     rating: pick(ratings),
     type: pick(types),
     dnf: Math.random() < 0.25, // ~1 in 4 marked did-not-finish
+    spoilers: Math.random() < 0.3, // ~3 in 10 contain spoilers
     description: `Stress-test entry ${i + 1}. ${pick(adjectives)} ${pick(nouns).toLowerCase()} meets ${pick(adjectives).toLowerCase()} ${pick(nouns).toLowerCase()} in a tale of ${pick(nouns).toLowerCase()}s.`,
   }),
 );
