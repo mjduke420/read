@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="stylesheet" href="styles.css?v=16" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
   </head>
   <body>
@@ -31,6 +31,12 @@
             <h2 class="chart-title">Reading activity</h2>
             <p class="chart-sub">Books logged per month. Darker = more.</p>
             <div id="heatmap" class="heatmap"></div>
+          </section>
+
+          <section class="panel chart-panel chart-wide">
+            <h2 class="chart-title">Average rating over time</h2>
+            <p class="chart-sub">Mean rating of rated books, by the year they were read.</p>
+            <div id="chart-rating-time" class="line-chart"></div>
           </section>
 
           <section class="panel chart-panel">
@@ -62,6 +68,6 @@
       </section>
     </main>
 
-    <script src="statistics.js?v=15" type="module"></script>
+    <script src="statistics.js?v=16" type="module"></script>
   </body>
 </html>

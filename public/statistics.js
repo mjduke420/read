@@ -35,6 +35,7 @@ async function main() {
 function render(stats) {
   renderCards(stats);
   renderHeatmap(stats.heatmap);
+  renderLineChart('chart-rating-time', stats.ratingTimeline);
   renderVerticalBars('chart-year', yearEntries(stats.byYear));
   renderVerticalBars('chart-rating', ratingEntries(stats.byRating));
   renderHbars('chart-type', typeEntries(stats.byType), stats.total);
@@ -62,6 +63,8 @@ function renderCards(stats) {
     card(`${pct(stats.dnfCount)}%`, `Did not finish (${stats.dnfCount})`, 'amber'),
     card(stats.spoilerCount, 'Marked spoilers', 'red'),
     card(stats.mostReadYear ?? '—', 'Most-read year', 'violet'),
+    card(stats.longestStreak ?? 0, 'Longest streak (months)', 'cyan'),
+    card(stats.currentStreak ?? 0, 'Current streak (months)', 'green'),
   ];
   document.getElementById('stat-cards').replaceChildren(...cards);
 }
@@ -174,6 +177,53 @@ function renderWordCloud(words) {
     return node;
   });
   container.replaceChildren(...items);
+}
+
+// SVG line chart of average rating (0-5) over time. All values are numbers or
+// digit-only year strings, so building the SVG markup directly is injection-safe.
+function renderLineChart(containerId, points) {
+  const container = document.getElementById(containerId);
+  if (!points || points.length === 0) {
+    container.replaceChildren(el('p', 'chart-empty', 'No rated books yet.'));
+    return;
+  }
+  const W = 640;
+  const H = 240;
+  const padL = 30;
+  const padR = 18;
+  const padT = 22;
+  const padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const n = points.length;
+  const xAt = (i) => (n === 1 ? padL + innerW / 2 : padL + (i / (n - 1)) * innerW);
+  const yAt = (v) => padT + innerH - (v / 5) * innerH;
+
+  let grid = '';
+  for (let g = 1; g <= 5; g += 1) {
+    const gy = yAt(g).toFixed(1);
+    grid += `<line x1="${padL}" y1="${gy}" x2="${W - padR}" y2="${gy}" class="lc-grid"/>`;
+    grid += `<text x="${padL - 6}" y="${(yAt(g) + 3).toFixed(1)}" class="lc-axis" text-anchor="end">${g}</text>`;
+  }
+
+  const coords = points.map((p, i) => [xAt(i), yAt(p.average)]);
+  const line =
+    n > 1
+      ? `<polyline points="${coords.map((c) => `${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' ')}" class="lc-line"/>`
+      : '';
+  const dots = coords
+    .map((c, i) => {
+      const cx = c[0].toFixed(1);
+      const cy = c[1].toFixed(1);
+      return (
+        `<circle cx="${cx}" cy="${cy}" r="4" class="lc-dot"/>` +
+        `<text x="${cx}" y="${(c[1] - 10).toFixed(1)}" class="lc-val" text-anchor="middle">${points[i].average}</text>` +
+        `<text x="${cx}" y="${H - 10}" class="lc-axis" text-anchor="middle">${points[i].period}</text>`
+      );
+    })
+    .join('');
+
+  container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="line-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Average rating over time">${grid}${line}${dots}</svg>`;
 }
 
 main();
