@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Statistics · The Next Chaper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>📊 Statistics</h1>
+      <p class="subtitle">A look at your reading habits.</p>
+      <nav class="topnav">
+        <a class="nav-link" href="index.html">📚 Library</a>
+        <a class="nav-link active" href="statistics.html">📊 Statistics</a>
+      </nav>
+    </header>
+
+    <main class="stats-layout">
+      <p id="stats-status" class="stats-status">Loading statistics…</p>
+
+      <section id="stats-content" class="hidden">
+        <div id="stat-cards" class="stat-cards"></div>
+
+        <div class="stats-grid">
+          <section class="panel chart-panel chart-wide">
+            <h2 class="chart-title">Reading activity</h2>
+            <p class="chart-sub">Books logged per month. Darker = more.</p>
+            <div id="heatmap" class="heatmap"></div>
+          </section>
+
+          <section class="panel chart-panel">
+            <h2 class="chart-title">Books per year</h2>
+            <div id="chart-year" class="bar-chart"></div>
+          </section>
+
+          <section class="panel chart-panel">
+            <h2 class="chart-title">Rating distribution</h2>
+            <div id="chart-rating" class="bar-chart"></div>
+          </section>
+
+          <section class="panel chart-panel">
+            <h2 class="chart-title">By format</h2>
+            <div id="chart-type" class="hbar-chart"></div>
+          </section>
+
+          <section class="panel chart-panel">
+            <h2 class="chart-title">Most-read authors</h2>
+            <div id="authors" class="hbar-chart"></div>
+          </section>
+
+          <section class="panel chart-panel chart-wide">
+            <h2 class="chart-title">Common words in titles</h2>
+            <p class="chart-sub">Bigger = more frequent.</p>
+            <div id="wordcloud" class="wordcloud"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="statistics.js?v=15" type="module"></script>
+  </body>
+</html>

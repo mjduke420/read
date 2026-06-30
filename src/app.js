@@ -2,6 +2,7 @@ import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { createBooksRouter } from './routes.js';
+import { createStatsRouter } from './statsRoutes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -14,6 +15,7 @@ export function createApp(store) {
   app.use(express.json());
 
   app.use('/api/books', createBooksRouter(store));
+  app.use('/api/stats', createStatsRouter(store));
   // Serve the frontend. `no-cache` forces browsers to revalidate against the
   // ETag every load, so a redeploy can never leave stale JS/CSS running.
   app.use(
