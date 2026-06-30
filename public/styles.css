@@ -1447,34 +1447,68 @@ button.ghost:hover {
   fill: var(--accent-secondary);
 }
 
-/* Heatmap */
+/* Daily heatmap: one calendar per year (month rows x day columns) */
 .heatmap {
   overflow-x: auto;
 }
-.heatmap-grid {
-  display: grid;
-  grid-template-columns: 52px repeat(12, minmax(28px, 1fr));
-  gap: 5px;
-  min-width: 480px;
+.cal-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
-.heat-month,
-.heat-corner {
-  font-size: 0.72rem;
+.cal-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+.cal-count {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.82rem;
+}
+.day-grid {
+  display: grid;
+  grid-template-columns: 36px repeat(31, 15px);
+  grid-auto-rows: 15px;
+  gap: 3px;
+  width: max-content;
+}
+.day-num {
+  font-size: 0.6rem;
   color: var(--muted);
   text-align: center;
-  font-weight: 600;
+  align-self: center;
 }
-.heat-year {
-  font-size: 0.78rem;
+.day-mon {
+  font-size: 0.7rem;
   color: var(--muted);
-  font-weight: 600;
   display: flex;
   align-items: center;
 }
-.heat-cell {
-  aspect-ratio: 1 / 1;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+.day-cell {
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.day-na {
+  background: transparent !important;
+  border: none;
+}
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.cal-legend-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.cal-legend-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
 }
 
 /* Word cloud */

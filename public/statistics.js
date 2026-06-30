@@ -1,7 +1,6 @@
 const STATUS = document.getElementById('stats-status');
 const CONTENT = document.getElementById('stats-content');
 
-const MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
 const TYPE_LABELS = { book: '📖 Book', ebook: '📱 eBook', audiobook: '🎧 Audiobook' };
 
 // Small DOM helper. Children may be strings (escaped via textContent) or nodes.
@@ -34,7 +33,7 @@ async function main() {
 
 function render(stats) {
   renderCards(stats);
-  renderHeatmap(stats.heatmap);
+  renderHeatmap(stats.dailyHeatmap);
   renderLineChart('chart-rating-time', stats.ratingTimeline);
   renderVerticalBars('chart-year', yearEntries(stats.byYear));
   renderVerticalBars('chart-rating', ratingEntries(stats.byRating));
@@ -130,32 +129,81 @@ function renderHbars(containerId, entries, scaleTo) {
   container.replaceChildren(...rows);
 }
 
-// Calendar-style heatmap: one row per year, one cell per month.
-function renderHeatmap(heatmap) {
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function heatColor(count, max) {
+  return count === 0
+    ? 'rgba(255,255,255,0.04)'
+    : `rgba(139, 92, 246, ${(0.18 + (count / max) * 0.82).toFixed(3)})`;
+}
+
+// Daily heatmap: one calendar per year (12 month rows x 31 day columns).
+function renderHeatmap(daily) {
   const container = document.getElementById('heatmap');
-  const years = Object.keys(heatmap).sort();
-  if (!years.length) {
+  const dates = Object.keys(daily || {});
+  if (!dates.length) {
     container.replaceChildren(el('p', 'chart-empty', 'No dated books yet.'));
     return;
   }
   let max = 1;
-  for (const y of years) max = Math.max(max, ...heatmap[y]);
+  for (const d of dates) max = Math.max(max, daily[d]);
+  const years = [...new Set(dates.map((d) => d.slice(0, 4)))].sort().reverse();
 
-  const grid = el('div', 'heatmap-grid');
-  grid.append(el('div', 'heat-corner', ''));
-  for (const m of MONTHS) grid.append(el('div', 'heat-month', m));
-  for (const y of years) {
-    grid.append(el('div', 'heat-year', y));
-    heatmap[y].forEach((count, i) => {
-      const cell = el('div', 'heat-cell', '');
-      const intensity = count / max;
-      cell.style.background =
-        count === 0 ? 'rgba(255,255,255,0.04)' : `rgba(139, 92, 246, ${0.18 + intensity * 0.82})`;
-      cell.title = `${y}-${String(i + 1).padStart(2, '0')}: ${count} book${count === 1 ? '' : 's'}`;
-      grid.append(cell);
-    });
+  const wrap = el('div', 'cal-wrap');
+  for (const y of years) wrap.append(buildYearGrid(Number(y), daily, max));
+  wrap.append(buildLegend(max));
+  container.replaceChildren(wrap);
+}
+
+function buildYearGrid(year, daily, max) {
+  const prefix = `${year}-`;
+  const yearTotal = Object.keys(daily)
+    .filter((d) => d.startsWith(prefix))
+    .reduce((sum, d) => sum + daily[d], 0);
+
+  const section = el('section', 'cal-year', [
+    el('div', 'cal-title', [
+      String(year),
+      el('span', 'cal-count', ` · ${yearTotal} book${yearTotal === 1 ? '' : 's'}`),
+    ]),
+  ]);
+
+  const grid = el('div', 'day-grid');
+  // Header row: corner + day-of-month numbers (labelled at 1 and every 5th).
+  grid.append(el('div', 'day-corner', ''));
+  for (let d = 1; d <= 31; d += 1) {
+    grid.append(el('div', 'day-num', d === 1 || d % 5 === 0 ? String(d) : ''));
   }
-  container.replaceChildren(grid);
+  // One row per month.
+  for (let m = 0; m < 12; m += 1) {
+    grid.append(el('div', 'day-mon', MONTH_NAMES[m]));
+    const daysInMonth = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
+    for (let d = 1; d <= 31; d += 1) {
+      if (d > daysInMonth) {
+        grid.append(el('div', 'day-cell day-na', ''));
+        continue;
+      }
+      const key = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const count = daily[key] || 0;
+      const cell = el('div', 'day-cell', '');
+      cell.style.background = heatColor(count, max);
+      cell.title = `${key}: ${count} book${count === 1 ? '' : 's'}`;
+      grid.append(cell);
+    }
+  }
+  section.append(grid);
+  return section;
+}
+
+function buildLegend(max) {
+  const legend = el('div', 'cal-legend', [el('span', 'cal-legend-label', 'Less')]);
+  for (const frac of [0, 0.25, 0.5, 0.75, 1]) {
+    const sw = el('span', 'cal-legend-cell', '');
+    sw.style.background = heatColor(frac === 0 ? 0 : Math.max(1, Math.round(frac * max)), max);
+    legend.append(sw);
+  }
+  legend.append(el('span', 'cal-legend-label', 'More'));
+  return legend;
 }
 
 function renderWordCloud(words) {
