@@ -35,7 +35,7 @@ export function computeStats(books) {
   const byType = { book: 0, ebook: 0, audiobook: 0 };
   const byRating = {}; // '0.5'..'5' plus 'unrated'
   const byYear = {}; // 'YYYY' -> count
-  const heatmap = {}; // 'YYYY' -> number[12] (one per month)
+  const dailyHeatmap = {}; // 'YYYY-MM-DD' -> count (days with activity)
   const authorCounts = new Map();
   const wordCounts = new Map();
   const ratingByMonth = {}; // 'YYYY-MM' -> { sum, count } of rated books
@@ -61,10 +61,12 @@ export function computeStats(books) {
     const month = Number(date.slice(5, 7));
     if (/^\d{4}$/.test(year)) {
       byYear[year] = (byYear[year] || 0) + 1;
-      if (!heatmap[year]) heatmap[year] = new Array(12).fill(0);
       if (month >= 1 && month <= 12) {
-        heatmap[year][month - 1] += 1;
         monthSet.add(Number(year) * 12 + (month - 1));
+      }
+      const dateStr = date.slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        dailyHeatmap[dateStr] = (dailyHeatmap[dateStr] || 0) + 1;
       }
       if (b.rating != null && month >= 1 && month <= 12) {
         const mKey = `${year}-${String(month).padStart(2, '0')}`;
@@ -127,7 +129,7 @@ export function computeStats(books) {
     byType,
     byRating,
     byYear,
-    heatmap,
+    dailyHeatmap,
     topAuthors,
     titleWords,
     ratingTimeline,

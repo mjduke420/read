@@ -31,13 +31,21 @@ test('computeStats groups by type and rating (incl. unrated)', () => {
   assert.equal(s.byRating.unrated, 1);
 });
 
-test('computeStats buckets by year and builds a monthly heatmap', () => {
+test('computeStats buckets by year and builds a daily heatmap', () => {
   const s = computeStats(sample);
   assert.deepEqual(s.byYear, { 2023: 1, 2024: 2 });
   assert.equal(s.mostReadYear, '2024');
-  assert.equal(s.heatmap['2024'][0], 1); // January
-  assert.equal(s.heatmap['2024'][2], 1); // March
-  assert.equal(s.heatmap['2023'][10], 1); // November
+  assert.equal(s.dailyHeatmap['2024-01-10'], 1);
+  assert.equal(s.dailyHeatmap['2024-03-22'], 1);
+  assert.equal(s.dailyHeatmap['2023-11-02'], 1);
+});
+
+test('computeStats daily heatmap aggregates multiple books on the same day', () => {
+  const s = computeStats([
+    { title: 'One', author: 'A', date: '2024-05-01', rating: 4, type: 'book', dnf: false, spoilers: false },
+    { title: 'Two', author: 'B', date: '2024-05-01', rating: 3, type: 'book', dnf: false, spoilers: false },
+  ]);
+  assert.equal(s.dailyHeatmap['2024-05-01'], 2);
 });
 
 test('computeStats ranks top authors by count', () => {
