@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=18" />
+    <link rel="stylesheet" href="styles.css?v=19" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
   </head>
   <body>
@@ -27,11 +27,24 @@
         <div id="stat-cards" class="stat-cards"></div>
 
         <div class="stats-grid">
-          <section class="panel chart-panel chart-wide">
-            <h2 class="chart-title">Reading activity</h2>
-            <p class="chart-sub">Books logged per day, one calendar per year. Darker = more.</p>
-            <div id="heatmap" class="heatmap"></div>
-          </section>
+          <div class="chart-wide heat-row">
+            <section class="panel chart-panel heat-panel">
+              <h2 class="chart-title">Reading activity</h2>
+              <p class="chart-sub">Books logged per day, one calendar per year. Darker = more.</p>
+              <div id="heatmap" class="heatmap"></div>
+            </section>
+            <section class="panel chart-panel rated-panel">
+              <h2 class="chart-title">Top rated</h2>
+              <div class="rated-block">
+                <h3 class="rated-sub best">Best rated</h3>
+                <div id="best-rated" class="rated-list"></div>
+              </div>
+              <div class="rated-block">
+                <h3 class="rated-sub worst">Worst rated</h3>
+                <div id="worst-rated" class="rated-list"></div>
+              </div>
+            </section>
+          </div>
 
           <section class="panel chart-panel chart-wide">
             <h2 class="chart-title">Average rating over time</h2>
@@ -68,6 +81,6 @@
       </section>
     </main>
 
-    <script src="statistics.js?v=18" type="module"></script>
+    <script src="statistics.js?v=19" type="module"></script>
   </body>
 </html>

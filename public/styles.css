@@ -1447,6 +1447,90 @@ button.ghost:hover {
   fill: var(--accent-secondary);
 }
 
+/* Heatmap row: calendar on the left, best/worst rated on the right */
+.heat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+.heat-panel {
+  min-width: 0;
+}
+.rated-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.rated-sub {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rated-sub.best {
+  color: #10b981;
+}
+.rated-sub.worst {
+  color: #f87171;
+}
+.rated-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rated-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rated-rank {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rated-info {
+  flex: 1;
+  min-width: 0;
+}
+.rated-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rated-author {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rated-score {
+  flex: 0 0 auto;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--star);
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .heat-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Daily heatmap: one calendar per year (month rows x day columns) */
 .heatmap {
   overflow-x: auto;
