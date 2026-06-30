@@ -53,10 +53,32 @@ test('computeStats extracts title words minus stopwords/short words', () => {
   assert.equal(words.the, undefined); // stopword removed
 });
 
-test('computeStats builds a rating timeline averaged per year', () => {
-  // 2023's only book is unrated, so it is excluded; 2024 averages 5 and 4.
+test('computeStats builds a monthly rating timeline (last 6 months with ratings)', () => {
+  // 2023-11 is unrated (excluded); 2024-01 -> 5, 2024-03 -> 4.
   const s = computeStats(sample);
-  assert.deepEqual(s.ratingTimeline, [{ period: '2024', average: 4.5, count: 2 }]);
+  assert.deepEqual(s.ratingTimeline, [
+    { period: '2024-01', label: "Jan '24", average: 5, count: 1 },
+    { period: '2024-03', label: "Mar '24", average: 4, count: 1 },
+  ]);
+});
+
+test('computeStats rating timeline keeps only the last 6 months', () => {
+  const books = [];
+  for (let m = 1; m <= 8; m += 1) {
+    books.push({
+      title: `Book ${m}`,
+      author: 'A',
+      date: `2024-${String(m).padStart(2, '0')}-05`,
+      rating: 3,
+      type: 'book',
+      dnf: false,
+      spoilers: false,
+    });
+  }
+  const s = computeStats(books);
+  assert.equal(s.ratingTimeline.length, 6);
+  assert.equal(s.ratingTimeline[0].period, '2024-03'); // months 3..8
+  assert.equal(s.ratingTimeline[5].period, '2024-08');
 });
 
 test('computeStats computes longest and current month streaks', () => {
