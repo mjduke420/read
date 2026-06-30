@@ -26,6 +26,20 @@ test('GET /api/books returns an empty list initially', async () => {
   assert.deepEqual(res.body.data, []);
 });
 
+test('GET /api/stats returns aggregate statistics', async () => {
+  await request(app).post('/api/books').send({ title: 'Silent Dune', author: 'Herbert', rating: 5, type: 'book' });
+  await request(app).post('/api/books').send({ title: 'Silent Hyperion', author: 'Herbert', dnf: 'on', type: 'ebook' });
+
+  const res = await request(app).get('/api/stats');
+  assert.equal(res.status, 200);
+  assert.equal(res.body.success, true);
+  assert.equal(res.body.data.total, 2);
+  assert.equal(res.body.data.distinctAuthors, 1);
+  assert.equal(res.body.data.dnfCount, 1);
+  const words = Object.fromEntries(res.body.data.titleWords.map((w) => [w.word, w.count]));
+  assert.equal(words.silent, 2);
+});
+
 test('POST /api/books creates a book and GET returns it', async () => {
   const res = await request(app)
     .post('/api/books')
