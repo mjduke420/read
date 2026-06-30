@@ -155,8 +155,15 @@ function render(books) {
   lastBooks = books;
   els.tbody.innerHTML = '';
   const isEmpty = books.length === 0;
+  const filtering = Boolean(state.search) || Object.keys(state.filters).length > 0;
   els.empty.classList.toggle('hidden', !isEmpty);
-  els.table.classList.toggle('hidden', isEmpty);
+  els.empty.textContent = filtering
+    ? 'No books match the current filters.'
+    : 'No books yet. Add your first one!';
+  // Keep the table (and its per-column filter row) visible while filtering, so
+  // the controls stay usable even when nothing matches. Only hide it for a
+  // genuinely empty library with no active search/filters.
+  els.table.classList.toggle('hidden', isEmpty && !filtering);
   for (const book of books) {
     els.tbody.appendChild(row(book));
   }

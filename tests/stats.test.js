@@ -53,6 +53,24 @@ test('computeStats extracts title words minus stopwords/short words', () => {
   assert.equal(words.the, undefined); // stopword removed
 });
 
+test('computeStats builds a rating timeline averaged per year', () => {
+  // 2023's only book is unrated, so it is excluded; 2024 averages 5 and 4.
+  const s = computeStats(sample);
+  assert.deepEqual(s.ratingTimeline, [{ period: '2024', average: 4.5, count: 2 }]);
+});
+
+test('computeStats computes longest and current month streaks', () => {
+  const streakSet = [
+    { title: 'A', author: 'X', date: '2024-01-15', rating: 3, type: 'book', dnf: false, spoilers: false },
+    { title: 'B', author: 'Y', date: '2024-02-02', rating: 4, type: 'book', dnf: false, spoilers: false },
+    { title: 'C', author: 'Z', date: '2024-03-10', rating: 5, type: 'book', dnf: false, spoilers: false },
+    { title: 'D', author: 'W', date: '2024-06-01', rating: 2, type: 'book', dnf: false, spoilers: false },
+  ];
+  const s = computeStats(streakSet);
+  assert.equal(s.longestStreak, 3); // Jan-Feb-Mar
+  assert.equal(s.currentStreak, 1); // only June at the end
+});
+
 test('computeStats handles an empty collection', () => {
   const s = computeStats([]);
   assert.equal(s.total, 0);
@@ -60,4 +78,7 @@ test('computeStats handles an empty collection', () => {
   assert.equal(s.mostReadYear, null);
   assert.deepEqual(s.topAuthors, []);
   assert.deepEqual(s.titleWords, []);
+  assert.deepEqual(s.ratingTimeline, []);
+  assert.equal(s.longestStreak, 0);
+  assert.equal(s.currentStreak, 0);
 });

@@ -35,6 +35,8 @@ export function computeStats(books) {
   const heatmap = {}; // 'YYYY' -> number[12] (one per month)
   const authorCounts = new Map();
   const wordCounts = new Map();
+  const ratingByYear = {}; // year -> { sum, count } of rated books
+  const monthSet = new Set(); // distinct (year*12 + monthIndex) with activity
 
   for (const b of books) {
     if (b.rating == null) {
@@ -57,7 +59,15 @@ export function computeStats(books) {
     if (/^\d{4}$/.test(year)) {
       byYear[year] = (byYear[year] || 0) + 1;
       if (!heatmap[year]) heatmap[year] = new Array(12).fill(0);
-      if (month >= 1 && month <= 12) heatmap[year][month - 1] += 1;
+      if (month >= 1 && month <= 12) {
+        heatmap[year][month - 1] += 1;
+        monthSet.add(Number(year) * 12 + (month - 1));
+      }
+      if (b.rating != null) {
+        if (!ratingByYear[year]) ratingByYear[year] = { sum: 0, count: 0 };
+        ratingByYear[year].sum += b.rating;
+        ratingByYear[year].count += 1;
+      }
     }
 
     const author = String(b.author || '').trim();
@@ -85,6 +95,16 @@ export function computeStats(books) {
     .sort((a, b) => b.count - a.count || a.word.localeCompare(b.word))
     .slice(0, 40);
 
+  const ratingTimeline = Object.keys(ratingByYear)
+    .sort()
+    .map((y) => ({
+      period: y,
+      average: Math.round((ratingByYear[y].sum / ratingByYear[y].count) * 10) / 10,
+      count: ratingByYear[y].count,
+    }));
+
+  const { longest: longestStreak, current: currentStreak } = monthStreaks(monthSet);
+
   return {
     total,
     averageRating,
@@ -100,5 +120,29 @@ export function computeStats(books) {
     heatmap,
     topAuthors,
     titleWords,
+    ratingTimeline,
+    longestStreak,
+    currentStreak,
   };
+}
+
+/**
+ * Longest and current run of consecutive calendar months with activity.
+ * `monthSet` holds integer indices (year*12 + monthIndex).
+ */
+function monthStreaks(monthSet) {
+  const months = [...monthSet].sort((a, b) => a - b);
+  if (months.length === 0) return { longest: 0, current: 0 };
+  let longest = 1;
+  let run = 1;
+  for (let i = 1; i < months.length; i += 1) {
+    run = months[i] === months[i - 1] + 1 ? run + 1 : 1;
+    if (run > longest) longest = run;
+  }
+  let current = 1;
+  for (let i = months.length - 1; i > 0; i -= 1) {
+    if (months[i] === months[i - 1] + 1) current += 1;
+    else break;
+  }
+  return { longest, current };
 }
