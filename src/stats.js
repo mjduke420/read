@@ -117,6 +117,18 @@ export function computeStats(books) {
 
   const { longest: longestStreak, current: currentStreak } = monthStreaks(monthSet);
 
+  // Top 5 best / worst rated books (rated only). Ties break by title.
+  const rated = books.filter((b) => b.rating != null);
+  const pick = (b) => ({ title: b.title, author: b.author, rating: b.rating });
+  const bestRated = [...rated]
+    .sort((a, b) => b.rating - a.rating || String(a.title).localeCompare(String(b.title)))
+    .slice(0, 5)
+    .map(pick);
+  const worstRated = [...rated]
+    .sort((a, b) => a.rating - b.rating || String(a.title).localeCompare(String(b.title)))
+    .slice(0, 5)
+    .map(pick);
+
   return {
     total,
     averageRating,
@@ -135,6 +147,8 @@ export function computeStats(books) {
     ratingTimeline,
     longestStreak,
     currentStreak,
+    bestRated,
+    worstRated,
   };
 }
 

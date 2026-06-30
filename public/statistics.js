@@ -34,6 +34,8 @@ async function main() {
 function render(stats) {
   renderCards(stats);
   renderHeatmap(stats.dailyHeatmap);
+  renderRatedList('best-rated', stats.bestRated);
+  renderRatedList('worst-rated', stats.worstRated);
   renderLineChart('chart-rating-time', stats.ratingTimeline);
   renderVerticalBars('chart-year', yearEntries(stats.byYear));
   renderVerticalBars('chart-rating', ratingEntries(stats.byRating));
@@ -126,6 +128,26 @@ function renderHbars(containerId, entries, scaleTo) {
       el('div', 'hbar-value', String(e.value)),
     ]);
   });
+  container.replaceChildren(...rows);
+}
+
+// Ranked list of best/worst rated books.
+function renderRatedList(containerId, items) {
+  const container = document.getElementById(containerId);
+  if (!items || !items.length) {
+    container.replaceChildren(el('p', 'chart-empty', 'No rated books yet.'));
+    return;
+  }
+  const rows = items.map((b, i) =>
+    el('div', 'rated-item', [
+      el('span', 'rated-rank', String(i + 1)),
+      el('div', 'rated-info', [
+        el('div', 'rated-title', b.title),
+        el('div', 'rated-author', b.author),
+      ]),
+      el('span', 'rated-score', `${b.rating}★`),
+    ]),
+  );
   container.replaceChildren(...rows);
 }
 

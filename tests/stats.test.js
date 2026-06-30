@@ -101,6 +101,28 @@ test('computeStats computes longest and current month streaks', () => {
   assert.equal(s.currentStreak, 1); // only June at the end
 });
 
+test('computeStats returns the top 5 best and worst rated books', () => {
+  const ratings = [1, 2, 3, 4, 5, 2.5, 4.5];
+  const books = ratings.map((r, i) => ({
+    title: `B${i}`,
+    author: 'A',
+    date: '2024-01-01',
+    rating: r,
+    type: 'book',
+    dnf: false,
+    spoilers: false,
+  }));
+  books.push({ title: 'NR', author: 'A', date: '2024-01-01', rating: null, type: 'book', dnf: false, spoilers: false });
+
+  const s = computeStats(books);
+  assert.equal(s.bestRated.length, 5);
+  assert.equal(s.worstRated.length, 5);
+  assert.deepEqual(s.bestRated.map((b) => b.rating), [5, 4.5, 4, 3, 2.5]);
+  assert.deepEqual(s.worstRated.map((b) => b.rating), [1, 2, 2.5, 3, 4]);
+  assert.ok(!s.bestRated.some((b) => b.title === 'NR')); // unrated excluded
+  assert.deepEqual(Object.keys(s.bestRated[0]).sort(), ['author', 'rating', 'title']);
+});
+
 test('computeStats handles an empty collection', () => {
   const s = computeStats([]);
   assert.equal(s.total, 0);
@@ -111,4 +133,6 @@ test('computeStats handles an empty collection', () => {
   assert.deepEqual(s.ratingTimeline, []);
   assert.equal(s.longestStreak, 0);
   assert.equal(s.currentStreak, 0);
+  assert.deepEqual(s.bestRated, []);
+  assert.deepEqual(s.worstRated, []);
 });
