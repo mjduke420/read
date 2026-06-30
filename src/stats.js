@@ -8,6 +8,9 @@ const STOPWORDS = new Set([
   'her', 'their', 'vol', 'part', 'book', 'how', 'what', 'why', 'who',
 ]);
 
+const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const RATING_MONTHS = 6; // rating timeline shows the last N months with ratings
+
 /** Splits a title into meaningful lowercase words (drops stopwords/short/numeric). */
 function tokenize(title) {
   return String(title || '')
@@ -35,7 +38,7 @@ export function computeStats(books) {
   const heatmap = {}; // 'YYYY' -> number[12] (one per month)
   const authorCounts = new Map();
   const wordCounts = new Map();
-  const ratingByYear = {}; // year -> { sum, count } of rated books
+  const ratingByMonth = {}; // 'YYYY-MM' -> { sum, count } of rated books
   const monthSet = new Set(); // distinct (year*12 + monthIndex) with activity
 
   for (const b of books) {
@@ -63,10 +66,11 @@ export function computeStats(books) {
         heatmap[year][month - 1] += 1;
         monthSet.add(Number(year) * 12 + (month - 1));
       }
-      if (b.rating != null) {
-        if (!ratingByYear[year]) ratingByYear[year] = { sum: 0, count: 0 };
-        ratingByYear[year].sum += b.rating;
-        ratingByYear[year].count += 1;
+      if (b.rating != null && month >= 1 && month <= 12) {
+        const mKey = `${year}-${String(month).padStart(2, '0')}`;
+        if (!ratingByMonth[mKey]) ratingByMonth[mKey] = { sum: 0, count: 0 };
+        ratingByMonth[mKey].sum += b.rating;
+        ratingByMonth[mKey].count += 1;
       }
     }
 
@@ -95,13 +99,19 @@ export function computeStats(books) {
     .sort((a, b) => b.count - a.count || a.word.localeCompare(b.word))
     .slice(0, 40);
 
-  const ratingTimeline = Object.keys(ratingByYear)
+  // Last N months that have rated books, oldest -> newest.
+  const ratingTimeline = Object.keys(ratingByMonth)
     .sort()
-    .map((y) => ({
-      period: y,
-      average: Math.round((ratingByYear[y].sum / ratingByYear[y].count) * 10) / 10,
-      count: ratingByYear[y].count,
-    }));
+    .slice(-RATING_MONTHS)
+    .map((key) => {
+      const [y, m] = key.split('-');
+      return {
+        period: key,
+        label: `${MONTH_ABBR[Number(m) - 1]} '${y.slice(2)}`,
+        average: Math.round((ratingByMonth[key].sum / ratingByMonth[key].count) * 10) / 10,
+        count: ratingByMonth[key].count,
+      };
+    });
 
   const { longest: longestStreak, current: currentStreak } = monthStreaks(monthSet);
 

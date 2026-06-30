@@ -218,7 +218,7 @@ function renderLineChart(containerId, points) {
       return (
         `<circle cx="${cx}" cy="${cy}" r="4" class="lc-dot"/>` +
         `<text x="${cx}" y="${(c[1] - 10).toFixed(1)}" class="lc-val" text-anchor="middle">${points[i].average}</text>` +
-        `<text x="${cx}" y="${H - 10}" class="lc-axis" text-anchor="middle">${points[i].period}</text>`
+        `<text x="${cx}" y="${H - 10}" class="lc-axis" text-anchor="middle">${points[i].label || points[i].period}</text>`
       );
     })
     .join('');
