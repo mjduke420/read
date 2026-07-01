@@ -41,6 +41,10 @@ function render(stats) {
   renderVerticalBars('chart-rating', ratingEntries(stats.byRating));
   renderHbars('chart-type', typeEntries(stats.byType), stats.total);
   renderHbars(
+    'chart-challenge',
+    stats.topChallenges.map((c) => ({ label: c.challenge, value: c.count })),
+  );
+  renderHbars(
     'authors',
     stats.topAuthors.map((a) => ({ label: a.author, value: a.count })),
   );
