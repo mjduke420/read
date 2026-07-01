@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=20" />
+    <link rel="stylesheet" href="styles.css?v=22" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
   </head>
   <body>
@@ -62,10 +62,16 @@
             <div id="chart-rating" class="bar-chart"></div>
           </section>
 
-          <section class="panel chart-panel">
-            <h2 class="chart-title">By format</h2>
-            <div id="chart-type" class="hbar-chart"></div>
-          </section>
+          <div class="stats-col">
+            <section class="panel chart-panel">
+              <h2 class="chart-title">By format</h2>
+              <div id="chart-type" class="hbar-chart"></div>
+            </section>
+            <section class="panel chart-panel">
+              <h2 class="chart-title">Books per challenge</h2>
+              <div id="chart-challenge" class="hbar-chart"></div>
+            </section>
+          </div>
 
           <section class="panel chart-panel">
             <h2 class="chart-title">Most-read authors</h2>
@@ -81,6 +87,6 @@
       </section>
     </main>
 
-    <script src="statistics.js?v=19" type="module"></script>
+    <script src="statistics.js?v=22" type="module"></script>
   </body>
 </html>

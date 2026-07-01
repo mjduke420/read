@@ -1334,6 +1334,13 @@ button.ghost:hover {
 .chart-wide {
   grid-column: 1 / -1;
 }
+/* Stack two small panels in one grid column (e.g. By format + Books per challenge). */
+.stats-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
 .chart-title {
   margin: 0 0 4px;
   font-family: 'Outfit', sans-serif;

@@ -37,6 +37,7 @@ export function computeStats(books) {
   const byYear = {}; // 'YYYY' -> count
   const dailyHeatmap = {}; // 'YYYY-MM-DD' -> count (days with activity)
   const authorCounts = new Map();
+  const challengeCounts = new Map();
   const wordCounts = new Map();
   const ratingByMonth = {}; // 'YYYY-MM' -> { sum, count } of rated books
   const monthSet = new Set(); // distinct (year*12 + monthIndex) with activity
@@ -79,6 +80,9 @@ export function computeStats(books) {
     const author = String(b.author || '').trim();
     if (author) authorCounts.set(author, (authorCounts.get(author) || 0) + 1);
 
+    const challenge = String(b.challenge || '').trim();
+    if (challenge) challengeCounts.set(challenge, (challengeCounts.get(challenge) || 0) + 1);
+
     for (const w of tokenize(b.title)) {
       wordCounts.set(w, (wordCounts.get(w) || 0) + 1);
     }
@@ -94,6 +98,11 @@ export function computeStats(books) {
   const topAuthors = [...authorCounts.entries()]
     .map(([author, count]) => ({ author, count }))
     .sort((a, b) => b.count - a.count || a.author.localeCompare(b.author))
+    .slice(0, 10);
+
+  const topChallenges = [...challengeCounts.entries()]
+    .map(([challenge, count]) => ({ challenge, count }))
+    .sort((a, b) => b.count - a.count || a.challenge.localeCompare(b.challenge))
     .slice(0, 10);
 
   const titleWords = [...wordCounts.entries()]
@@ -143,6 +152,7 @@ export function computeStats(books) {
     byYear,
     dailyHeatmap,
     topAuthors,
+    topChallenges,
     titleWords,
     ratingTimeline,
     longestStreak,

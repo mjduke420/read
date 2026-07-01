@@ -54,6 +54,20 @@ test('computeStats ranks top authors by count', () => {
   assert.equal(s.topAuthors[0].count, 2);
 });
 
+test('computeStats ranks top challenges, excluding empty tags', () => {
+  const books = [
+    { title: 'A', author: 'X', date: '2024-01-01', rating: 4, type: 'book', challenge: 'Book Riot 2026', dnf: false, spoilers: false },
+    { title: 'B', author: 'Y', date: '2024-01-02', rating: 3, type: 'book', challenge: 'Book Riot 2026', dnf: false, spoilers: false },
+    { title: 'C', author: 'Z', date: '2024-01-03', rating: 5, type: 'book', challenge: 'PopSugar 2025', dnf: false, spoilers: false },
+    { title: 'D', author: 'W', date: '2024-01-04', rating: 2, type: 'book', challenge: '', dnf: false, spoilers: false },
+  ];
+  const s = computeStats(books);
+  assert.deepEqual(s.topChallenges, [
+    { challenge: 'Book Riot 2026', count: 2 },
+    { challenge: 'PopSugar 2025', count: 1 },
+  ]);
+});
+
 test('computeStats extracts title words minus stopwords/short words', () => {
   const s = computeStats(sample);
   const words = Object.fromEntries(s.titleWords.map((w) => [w.word, w.count]));
