@@ -47,6 +47,8 @@ export const BookInputSchema = z.object({
       .optional()
       .default('book'),
   ),
+  // Optional free-text tag for reading challenges (e.g. "Book Riot 2026").
+  challenge: z.string().trim().max(200).optional().default(''),
   // "Did not finish" flag. Accepts checkbox/string/boolean truthy forms;
   // anything else (including missing) means false (Read).
   dnf: z.preprocess(
@@ -73,6 +75,7 @@ export function buildBookFields(input) {
     date: parsed.date && parsed.date !== '' ? parsed.date : today(),
     rating: parsed.rating ?? null,
     type: parsed.type ?? 'book',
+    challenge: parsed.challenge ?? '',
     dnf: parsed.dnf ?? false,
     spoilers: parsed.spoilers ?? false,
     description: parsed.description ?? '',
@@ -89,7 +92,7 @@ export function updateBook(id, input) {
   return { id, ...buildBookFields(input) };
 }
 
-const SEARCH_FIELDS = ['title', 'author', 'description', 'type', 'date'];
+const SEARCH_FIELDS = ['title', 'author', 'description', 'type', 'date', 'challenge'];
 
 /**
  * Case-insensitive substring search across title, author, description, type and
@@ -121,6 +124,7 @@ function matchesFilter(book, key, rawValue) {
     case 'title':
     case 'author':
     case 'description':
+    case 'challenge':
       return String(book[key] ?? '').toLowerCase().includes(value);
     case 'type':
       return String(book.type ?? '').toLowerCase() === value;
@@ -142,7 +146,7 @@ function matchesFilter(book, key, rawValue) {
   }
 }
 
-export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type', 'dnf', 'spoilers']);
+export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type', 'dnf', 'spoilers', 'challenge']);
 
 /** Returns a new sorted array; never mutates the input. */
 export function sortBooks(books, sortKey, order = 'asc') {

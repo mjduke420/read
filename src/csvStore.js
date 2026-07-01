@@ -5,7 +5,7 @@ import { stringify } from 'csv-stringify/sync';
 
 // Canonical column order persisted to disk. `id` is added on top of the
 // user-facing fields so books can be addressed for delete/edit later.
-export const COLUMNS = ['id', 'title', 'author', 'date', 'rating', 'type', 'dnf', 'spoilers', 'description'];
+export const COLUMNS = ['id', 'title', 'author', 'date', 'rating', 'type', 'challenge', 'dnf', 'spoilers', 'description'];
 
 // Allowed media types. Rows missing/invalid `type` fall back to 'book' so
 // CSV files written before this column existed remain valid.
@@ -86,6 +86,7 @@ function normalizeRecord(rec) {
     date: rec.date ?? '',
     rating: Number.isFinite(rating) ? rating : null,
     type: TYPES.includes(type) ? type : 'book',
+    challenge: rec.challenge ?? '',
     dnf: dnf === 'true' || dnf === '1' || dnf === 'yes',
     spoilers: spoilers === 'true' || spoilers === '1' || spoilers === 'yes',
     description: rec.description ?? '',

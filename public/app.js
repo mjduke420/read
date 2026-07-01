@@ -16,6 +16,7 @@ const els = {
   detailDate: document.querySelector('#detail .detail-date'),
   detailRating: document.querySelector('#detail .detail-rating'),
   detailStatus: document.querySelector('#detail .detail-status'),
+  detailChallenge: document.querySelector('#detail .detail-challenge'),
   detailDesc: document.querySelector('#detail .detail-desc'),
   dnfToggle: document.getElementById('dnf-toggle'),
   dnfState: document.getElementById('dnf-state'),
@@ -184,6 +185,7 @@ function row(book) {
     <td class="col-title"></td>
     <td class="col-author"></td>
     <td class="col-type"><span class="type-badge"></span></td>
+    <td class="col-challenge"></td>
     <td class="col-date"></td>
     <td class="col-rating"></td>
     <td class="col-status"></td>
@@ -207,6 +209,14 @@ function row(book) {
   const badge = tr.querySelector('.type-badge');
   badge.textContent = TYPE_LABELS[book.type] ?? TYPE_LABELS.book;
   badge.className = `type-badge type-badge-${book.type || 'book'}`;
+
+  if (book.challenge) {
+    const tag = document.createElement('span');
+    tag.className = 'challenge-tag';
+    tag.textContent = fit(book.challenge);
+    tag.title = book.challenge;
+    tr.querySelector('.col-challenge').appendChild(tag);
+  }
 
   tr.querySelector('.col-date').textContent = book.date || '';
 
@@ -280,6 +290,14 @@ function renderDetail(book) {
   els.detailSpoilers.innerHTML = '';
   els.detailSpoilers.appendChild(spoilersBadge(book.spoilers));
 
+  els.detailChallenge.innerHTML = '';
+  if (book.challenge) {
+    const tag = document.createElement('span');
+    tag.className = 'challenge-tag';
+    tag.textContent = book.challenge;
+    els.detailChallenge.appendChild(tag);
+  }
+
   els.detailDesc.textContent = book.description || 'No description.';
   els.detailDelete.onclick = () => remove(book);
   els.detail.classList.remove('hidden');
@@ -331,6 +349,7 @@ function openEdit() {
   f.elements.author.value = currentBook.author || '';
   f.elements.date.value = currentBook.date || '';
   f.elements.type.value = currentBook.type || 'book';
+  f.elements.challenge.value = currentBook.challenge || '';
   f.elements.rating.value = currentBook.rating == null ? '' : String(currentBook.rating);
   els.editDnf.checked = !!currentBook.dnf;
   els.editDnfState.textContent = currentBook.dnf ? 'DNF' : 'Read';

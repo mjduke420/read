@@ -66,6 +66,11 @@ test('createBook defaults spoilers to false and coerces truthy values', () => {
   assert.equal(createBook({ title: 'X', author: 'Y', spoilers: 'on' }).spoilers, true);
 });
 
+test('createBook defaults challenge to empty and trims a provided value', () => {
+  assert.equal(createBook({ title: 'X', author: 'Y' }).challenge, '');
+  assert.equal(createBook({ title: 'X', author: 'Y', challenge: '  Book Riot 2026 ' }).challenge, 'Book Riot 2026');
+});
+
 test('createBook rejects an invalid type', () => {
   assert.throws(
     () => createBook({ title: 'X', author: 'Y', type: 'scroll' }),
@@ -179,6 +184,16 @@ test('filterBooks filters by type, date, rating, dnf and spoilers', () => {
   assert.deepEqual(filterBooks(filterSet, { dnf: 'dnf' }).map((b) => b.id), ['2']);
   assert.deepEqual(filterBooks(filterSet, { spoilers: 'spoilers' }).map((b) => b.id), ['1']);
   assert.deepEqual(filterBooks(filterSet, { spoilers: 'free' }).map((b) => b.id), ['2', '3']);
+});
+
+test('filterBooks and searchBooks match the challenge tag (substring, case-insensitive)', () => {
+  const set = [
+    { id: '1', title: 'A', author: 'X', challenge: 'Book Riot 2026', description: '' },
+    { id: '2', title: 'B', author: 'Y', challenge: 'PopSugar 2025', description: '' },
+    { id: '3', title: 'C', author: 'Z', challenge: '', description: '' },
+  ];
+  assert.deepEqual(filterBooks(set, { challenge: 'riot' }).map((b) => b.id), ['1']);
+  assert.deepEqual(searchBooks(set, 'popsugar').map((b) => b.id), ['2']);
 });
 
 test('filterBooks combines multiple filters (AND)', () => {

@@ -592,6 +592,26 @@ button.ghost:hover {
   border: 1px solid var(--panel-border);
 }
 
+/* Reading-challenge tag */
+.col-challenge {
+  white-space: nowrap;
+}
+.challenge-tag {
+  display: inline-block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 /* Per-column filter row under the headers */
 .filter-row td {
   padding: 8px 12px;
@@ -1159,6 +1179,7 @@ button.ghost:hover {
   /* Hide secondary columns in list view only (grid view keeps them). */
   .table-wrap:not(.view-grid) .col-author,
   .table-wrap:not(.view-grid) .col-type,
+  .table-wrap:not(.view-grid) .col-challenge,
   .table-wrap:not(.view-grid) .col-date,
   .table-wrap:not(.view-grid) .col-status,
   .table-wrap:not(.view-grid) .col-spoilers,
@@ -1166,9 +1187,10 @@ button.ghost:hover {
   .table-wrap:not(.view-grid) thead th:nth-child(2),
   .table-wrap:not(.view-grid) thead th:nth-child(3),
   .table-wrap:not(.view-grid) thead th:nth-child(4),
-  .table-wrap:not(.view-grid) thead th:nth-child(6),
+  .table-wrap:not(.view-grid) thead th:nth-child(5),
   .table-wrap:not(.view-grid) thead th:nth-child(7),
-  .table-wrap:not(.view-grid) thead th:nth-child(8) {
+  .table-wrap:not(.view-grid) thead th:nth-child(8),
+  .table-wrap:not(.view-grid) thead th:nth-child(9) {
     display: none;
   }
   .desc-clamp {

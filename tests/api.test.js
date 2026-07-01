@@ -95,6 +95,18 @@ test('GET supports per-column filters', async () => {
   assert.equal(bySpoilers.body.data[0].title, 'Dune');
 });
 
+test('POST stores the challenge tag and GET filters by it', async () => {
+  await request(app).post('/api/books').send({ title: 'Tagged', author: 'A', challenge: 'Book Riot 2026' });
+  await request(app).post('/api/books').send({ title: 'Untagged', author: 'B' });
+
+  const created = await request(app).get('/api/books').query({ f_title: 'tagged' });
+  assert.equal(created.body.data[0].challenge, 'Book Riot 2026');
+
+  const byChallenge = await request(app).get('/api/books').query({ f_challenge: 'riot' });
+  assert.equal(byChallenge.body.data.length, 1);
+  assert.equal(byChallenge.body.data[0].title, 'Tagged');
+});
+
 test('POST /api/books rejects an invalid type with 400', async () => {
   const res = await request(app).post('/api/books').send({ title: 'X', author: 'Y', type: 'vinyl' });
   assert.equal(res.status, 400);

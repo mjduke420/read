@@ -19,6 +19,8 @@ const firstNames = ['Ava', 'Liam', 'Noah', 'Mia', 'Kai', 'Zoe', 'Eli', 'Nora', '
 const lastNames = ['Reyes', 'Okafor', 'Tanaka', 'Novak', 'Haidar', 'Sorensen', 'Mbeki', 'Costa', 'Singh', 'Lindqvist'];
 const types = ['book', 'ebook', 'audiobook'];
 const ratings = ['', '0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5'];
+// Mostly empty so filtering by challenge is meaningful.
+const challenges = ['', '', '', '', 'Book Riot 2026', 'PopSugar 2025', 'Sci-Fi Summer', '52 Books in 52 Weeks'];
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -38,6 +40,7 @@ const generated = Array.from({ length: count }, (_, i) =>
     date: randomDate(),
     rating: pick(ratings),
     type: pick(types),
+    challenge: pick(challenges),
     dnf: Math.random() < 0.25, // ~1 in 4 marked did-not-finish
     spoilers: Math.random() < 0.3, // ~3 in 10 contain spoilers
     description: `Stress-test entry ${i + 1}. ${pick(adjectives)} ${pick(nouns).toLowerCase()} meets ${pick(adjectives).toLowerCase()} ${pick(nouns).toLowerCase()} in a tale of ${pick(nouns).toLowerCase()}s.`,

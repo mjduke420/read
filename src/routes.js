@@ -18,6 +18,7 @@ export function createBooksRouter(store) {
         title: req.query.f_title,
         author: req.query.f_author,
         type: req.query.f_type,
+        challenge: req.query.f_challenge,
         date: req.query.f_date,
         rating: req.query.f_rating,
         dnf: req.query.f_dnf,
