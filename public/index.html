@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=20" />
+    <link rel="stylesheet" href="styles.css?v=21" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
   </head>
   <body>
@@ -46,6 +46,10 @@
               <option value="ebook">📱 eBook</option>
               <option value="audiobook">🎧 Audiobook</option>
             </select>
+          </label>
+          <label>
+            Challenge
+            <input type="text" name="challenge" maxlength="200" placeholder="e.g. Book Riot 2026" />
           </label>
           <label class="rating-label">
             Rating
@@ -142,6 +146,7 @@
                 <th data-key="title" scope="col">Title <span class="arrow"></span></th>
                 <th data-key="author" scope="col">Author <span class="arrow"></span></th>
                 <th data-key="type" scope="col">Type <span class="arrow"></span></th>
+                <th data-key="challenge" scope="col">Challenge <span class="arrow"></span></th>
                 <th data-key="date" scope="col">Date <span class="arrow"></span></th>
                 <th data-key="rating" scope="col">Rating <span class="arrow"></span></th>
                 <th data-key="dnf" scope="col">Status <span class="arrow"></span></th>
@@ -160,6 +165,7 @@
                     <option value="audiobook">Audiobook</option>
                   </select>
                 </td>
+                <td><input type="text" class="filter-input" data-filter="challenge" placeholder="Filter…" aria-label="Filter by challenge" /></td>
                 <td><input type="text" class="filter-input" data-filter="date" placeholder="e.g. 2024" aria-label="Filter by date" /></td>
                 <td>
                   <select class="filter-input" data-filter="rating" aria-label="Filter by rating">
@@ -225,6 +231,7 @@
           <span class="detail-rating"></span>
           <span class="detail-status"></span>
           <span class="detail-spoilers"></span>
+          <span class="detail-challenge"></span>
         </div>
         <p class="detail-desc"></p>
         <div class="detail-actions">
@@ -257,6 +264,10 @@
             </select>
           </label>
         </div>
+        <label>
+          Challenge
+          <input type="text" name="challenge" maxlength="200" placeholder="e.g. Book Riot 2026" />
+        </label>
         <label>
           Rating
           <select name="rating">
@@ -301,6 +312,6 @@
       </form>
     </div>
 
-    <script src="app.js?v=16" type="module"></script>
+    <script src="app.js?v=21" type="module"></script>
   </body>
 </html>
