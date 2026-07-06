@@ -1570,6 +1570,31 @@ button.ghost:hover {
   justify-content: center;
   overflow: auto;
 }
+/* Year paging control above the (single, currently-shown) calendar */
+.heat-year-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.heat-year-nav button {
+  padding: 6px 12px;
+  font-weight: 600;
+}
+.heat-year-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.heat-year-label {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  min-width: 52px;
+  text-align: center;
+}
+
 .cal-wrap {
   display: flex;
   flex-direction: column;
