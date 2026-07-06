@@ -163,23 +163,58 @@ function heatColor(count, max) {
     : `rgba(139, 92, 246, ${(0.18 + (count / max) * 0.82).toFixed(3)})`;
 }
 
-// Daily heatmap: one calendar per year (12 month rows x 31 day columns).
+// Daily heatmap: one calendar per year (12 month rows x 31 day columns), paged
+// one year at a time so multiple years of data don't dominate the page.
+let heatmapDaily = {};
+let heatmapMax = 1;
+let heatmapYears = []; // newest first
+let heatmapYearIndex = 0;
+
 function renderHeatmap(daily) {
+  heatmapDaily = daily || {};
+  const dates = Object.keys(heatmapDaily);
+  const nav = document.getElementById('heat-year-nav');
   const container = document.getElementById('heatmap');
-  const dates = Object.keys(daily || {});
   if (!dates.length) {
+    nav.classList.add('hidden');
     container.replaceChildren(el('p', 'chart-empty', 'No dated books yet.'));
     return;
   }
-  let max = 1;
-  for (const d of dates) max = Math.max(max, daily[d]);
-  const years = [...new Set(dates.map((d) => d.slice(0, 4)))].sort().reverse();
-
-  const wrap = el('div', 'cal-wrap');
-  for (const y of years) wrap.append(buildYearGrid(Number(y), daily, max));
-  wrap.append(buildLegend(max));
-  container.replaceChildren(wrap);
+  heatmapMax = 1;
+  for (const d of dates) heatmapMax = Math.max(heatmapMax, heatmapDaily[d]);
+  heatmapYears = [...new Set(dates.map((d) => d.slice(0, 4)))].sort().reverse();
+  heatmapYearIndex = 0; // default to the most recent year
+  nav.classList.remove('hidden');
+  renderHeatmapYear();
 }
+
+function renderHeatmapYear() {
+  const container = document.getElementById('heatmap');
+  const year = heatmapYears[heatmapYearIndex];
+  const wrap = el('div', 'cal-wrap');
+  wrap.append(buildYearGrid(Number(year), heatmapDaily, heatmapMax));
+  wrap.append(buildLegend(heatmapMax));
+  container.replaceChildren(wrap);
+
+  document.getElementById('heat-year-label').textContent = year;
+  // heatmapYears is newest -> oldest, so "prev" (older) increases the index
+  // and "next" (newer) decreases it.
+  document.getElementById('heat-prev-year').disabled = heatmapYearIndex >= heatmapYears.length - 1;
+  document.getElementById('heat-next-year').disabled = heatmapYearIndex <= 0;
+}
+
+document.getElementById('heat-prev-year').addEventListener('click', () => {
+  if (heatmapYearIndex < heatmapYears.length - 1) {
+    heatmapYearIndex += 1;
+    renderHeatmapYear();
+  }
+});
+document.getElementById('heat-next-year').addEventListener('click', () => {
+  if (heatmapYearIndex > 0) {
+    heatmapYearIndex -= 1;
+    renderHeatmapYear();
+  }
+});
 
 function buildYearGrid(year, daily, max) {
   const prefix = `${year}-`;

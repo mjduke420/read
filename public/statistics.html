@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=22" />
+    <link rel="stylesheet" href="styles.css?v=23" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
   </head>
   <body>
@@ -30,7 +30,12 @@
           <div class="chart-wide heat-row">
             <section class="panel chart-panel heat-panel">
               <h2 class="chart-title">Reading activity</h2>
-              <p class="chart-sub">Books logged per day, one calendar per year. Darker = more.</p>
+              <p class="chart-sub">Books logged per day. Darker = more.</p>
+              <div id="heat-year-nav" class="heat-year-nav hidden">
+                <button id="heat-prev-year" class="ghost" type="button" aria-label="Previous year">‹</button>
+                <span id="heat-year-label" class="heat-year-label"></span>
+                <button id="heat-next-year" class="ghost" type="button" aria-label="Next year">›</button>
+              </div>
               <div id="heatmap" class="heatmap"></div>
             </section>
             <section class="panel chart-panel rated-panel">
@@ -87,6 +92,6 @@
       </section>
     </main>
 
-    <script src="statistics.js?v=22" type="module"></script>
+    <script src="statistics.js?v=23" type="module"></script>
   </body>
 </html>
