@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { computeStats } from '../src/stats.js';
 
 const sample = [
-  { title: 'The Silent Garden', author: 'Ava Reyes', date: '2024-01-10', rating: 5, type: 'book', dnf: false, spoilers: true },
-  { title: 'Silent Empire', author: 'Ava Reyes', date: '2024-03-22', rating: 4, type: 'ebook', dnf: false, spoilers: false },
-  { title: 'Broken Machine', author: 'Liam Novak', date: '2023-11-02', rating: null, type: 'audiobook', dnf: true, spoilers: false },
+  { title: 'The Silent Garden', author: 'Ava Reyes', date: '2024-01-10', rating: 5, type: 'book', status: 'read', spoilers: true },
+  { title: 'Silent Empire', author: 'Ava Reyes', date: '2024-03-22', rating: 4, type: 'ebook', status: 'read', spoilers: false },
+  { title: 'Broken Machine', author: 'Liam Novak', date: '2023-11-02', rating: null, type: 'audiobook', status: 'dnf', spoilers: false },
 ];
 
 test('computeStats counts totals, status and spoilers', () => {
@@ -15,6 +15,18 @@ test('computeStats counts totals, status and spoilers', () => {
   assert.equal(s.dnfCount, 1);
   assert.equal(s.spoilerCount, 1);
   assert.equal(s.distinctAuthors, 2);
+});
+
+test('computeStats counts books currently being read separately from read/dnf', () => {
+  const books = [
+    { title: 'A', author: 'X', date: '', rating: null, type: 'book', status: 'reading', spoilers: false },
+    { title: 'B', author: 'Y', date: '2024-01-01', rating: 4, type: 'book', status: 'read', spoilers: false },
+    { title: 'C', author: 'Z', date: '2024-01-02', rating: 2, type: 'book', status: 'dnf', spoilers: false },
+  ];
+  const s = computeStats(books);
+  assert.equal(s.readingCount, 1);
+  assert.equal(s.readCount, 1);
+  assert.equal(s.dnfCount, 1);
 });
 
 test('computeStats averages only rated books', () => {
@@ -42,8 +54,8 @@ test('computeStats buckets by year and builds a daily heatmap', () => {
 
 test('computeStats daily heatmap aggregates multiple books on the same day', () => {
   const s = computeStats([
-    { title: 'One', author: 'A', date: '2024-05-01', rating: 4, type: 'book', dnf: false, spoilers: false },
-    { title: 'Two', author: 'B', date: '2024-05-01', rating: 3, type: 'book', dnf: false, spoilers: false },
+    { title: 'One', author: 'A', date: '2024-05-01', rating: 4, type: 'book', status: 'read', spoilers: false },
+    { title: 'Two', author: 'B', date: '2024-05-01', rating: 3, type: 'book', status: 'read', spoilers: false },
   ]);
   assert.equal(s.dailyHeatmap['2024-05-01'], 2);
 });
@@ -56,10 +68,10 @@ test('computeStats ranks top authors by count', () => {
 
 test('computeStats ranks top challenges, excluding empty tags', () => {
   const books = [
-    { title: 'A', author: 'X', date: '2024-01-01', rating: 4, type: 'book', challenge: 'Book Riot 2026', dnf: false, spoilers: false },
-    { title: 'B', author: 'Y', date: '2024-01-02', rating: 3, type: 'book', challenge: 'Book Riot 2026', dnf: false, spoilers: false },
-    { title: 'C', author: 'Z', date: '2024-01-03', rating: 5, type: 'book', challenge: 'PopSugar 2025', dnf: false, spoilers: false },
-    { title: 'D', author: 'W', date: '2024-01-04', rating: 2, type: 'book', challenge: '', dnf: false, spoilers: false },
+    { title: 'A', author: 'X', date: '2024-01-01', rating: 4, type: 'book', challenge: 'Book Riot 2026', status: 'read', spoilers: false },
+    { title: 'B', author: 'Y', date: '2024-01-02', rating: 3, type: 'book', challenge: 'Book Riot 2026', status: 'read', spoilers: false },
+    { title: 'C', author: 'Z', date: '2024-01-03', rating: 5, type: 'book', challenge: 'PopSugar 2025', status: 'read', spoilers: false },
+    { title: 'D', author: 'W', date: '2024-01-04', rating: 2, type: 'book', challenge: '', status: 'read', spoilers: false },
   ];
   const s = computeStats(books);
   assert.deepEqual(s.topChallenges, [
@@ -93,7 +105,7 @@ test('computeStats rating timeline keeps only the last 6 months', () => {
       date: `2024-${String(m).padStart(2, '0')}-05`,
       rating: 3,
       type: 'book',
-      dnf: false,
+      status: 'read',
       spoilers: false,
     });
   }
@@ -105,10 +117,10 @@ test('computeStats rating timeline keeps only the last 6 months', () => {
 
 test('computeStats computes longest and current month streaks', () => {
   const streakSet = [
-    { title: 'A', author: 'X', date: '2024-01-15', rating: 3, type: 'book', dnf: false, spoilers: false },
-    { title: 'B', author: 'Y', date: '2024-02-02', rating: 4, type: 'book', dnf: false, spoilers: false },
-    { title: 'C', author: 'Z', date: '2024-03-10', rating: 5, type: 'book', dnf: false, spoilers: false },
-    { title: 'D', author: 'W', date: '2024-06-01', rating: 2, type: 'book', dnf: false, spoilers: false },
+    { title: 'A', author: 'X', date: '2024-01-15', rating: 3, type: 'book', status: 'read', spoilers: false },
+    { title: 'B', author: 'Y', date: '2024-02-02', rating: 4, type: 'book', status: 'read', spoilers: false },
+    { title: 'C', author: 'Z', date: '2024-03-10', rating: 5, type: 'book', status: 'read', spoilers: false },
+    { title: 'D', author: 'W', date: '2024-06-01', rating: 2, type: 'book', status: 'read', spoilers: false },
   ];
   const s = computeStats(streakSet);
   assert.equal(s.longestStreak, 3); // Jan-Feb-Mar
@@ -123,10 +135,10 @@ test('computeStats returns the top 5 best and worst rated books', () => {
     date: '2024-01-01',
     rating: r,
     type: 'book',
-    dnf: false,
+    status: 'read',
     spoilers: false,
   }));
-  books.push({ title: 'NR', author: 'A', date: '2024-01-01', rating: null, type: 'book', dnf: false, spoilers: false });
+  books.push({ title: 'NR', author: 'A', date: '2024-01-01', rating: null, type: 'book', status: 'read', spoilers: false });
 
   const s = computeStats(books);
   assert.equal(s.bestRated.length, 5);

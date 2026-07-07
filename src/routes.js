@@ -21,7 +21,7 @@ export function createBooksRouter(store) {
         challenge: req.query.f_challenge,
         date: req.query.f_date,
         rating: req.query.f_rating,
-        dnf: req.query.f_dnf,
+        status: req.query.f_status,
         spoilers: req.query.f_spoilers,
         description: req.query.f_desc,
       });
@@ -52,7 +52,7 @@ export function createBooksRouter(store) {
     }
   });
 
-  // PUT /api/books/:id  { title, author, date?, rating?, type?, dnf?, description? }
+  // PUT /api/books/:id  { title, author, date?, rating?, type?, status?, description? }
   router.put('/:id', async (req, res, next) => {
     let fields;
     try {

@@ -30,6 +30,7 @@ export function computeStats(books) {
   let ratedCount = 0;
   let readCount = 0;
   let dnfCount = 0;
+  let readingCount = 0;
   let spoilerCount = 0;
 
   const byType = { book: 0, ebook: 0, audiobook: 0 };
@@ -52,7 +53,8 @@ export function computeStats(books) {
       byRating[key] = (byRating[key] || 0) + 1;
     }
 
-    if (b.dnf) dnfCount += 1;
+    if (b.status === 'dnf') dnfCount += 1;
+    else if (b.status === 'reading') readingCount += 1;
     else readCount += 1;
     if (b.spoilers) spoilerCount += 1;
     if (byType[b.type] != null) byType[b.type] += 1;
@@ -144,6 +146,7 @@ export function computeStats(books) {
     ratedCount,
     readCount,
     dnfCount,
+    readingCount,
     spoilerCount,
     distinctAuthors: authorCounts.size,
     mostReadYear,

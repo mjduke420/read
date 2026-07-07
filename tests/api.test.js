@@ -28,7 +28,7 @@ test('GET /api/books returns an empty list initially', async () => {
 
 test('GET /api/stats returns aggregate statistics', async () => {
   await request(app).post('/api/books').send({ title: 'Silent Dune', author: 'Herbert', rating: 5, type: 'book' });
-  await request(app).post('/api/books').send({ title: 'Silent Hyperion', author: 'Herbert', dnf: 'on', type: 'ebook' });
+  await request(app).post('/api/books').send({ title: 'Silent Hyperion', author: 'Herbert', status: 'dnf', type: 'ebook' });
 
   const res = await request(app).get('/api/stats');
   assert.equal(res.status, 200);
@@ -62,12 +62,24 @@ test('POST /api/books stores the media type and defaults to book', async () => {
   assert.equal(noType.body.data.type, 'book');
 });
 
-test('POST /api/books stores the dnf flag and defaults to false', async () => {
-  const dnf = await request(app).post('/api/books').send({ title: 'Unfinished', author: 'A', dnf: 'on' });
-  assert.equal(dnf.body.data.dnf, true);
+test('POST /api/books stores the status field and defaults to read', async () => {
+  const dnf = await request(app).post('/api/books').send({ title: 'Unfinished', author: 'A', status: 'dnf' });
+  assert.equal(dnf.body.data.status, 'dnf');
 
   const read = await request(app).post('/api/books').send({ title: 'Finished', author: 'B' });
-  assert.equal(read.body.data.dnf, false);
+  assert.equal(read.body.data.status, 'read');
+});
+
+test('POST /api/books with status=reading leaves the date empty when omitted', async () => {
+  const res = await request(app).post('/api/books').send({ title: 'In Progress', author: 'C', status: 'reading' });
+  assert.equal(res.body.data.status, 'reading');
+  assert.equal(res.body.data.date, '');
+});
+
+test('POST /api/books rejects an invalid status with 400', async () => {
+  const res = await request(app).post('/api/books').send({ title: 'X', author: 'Y', status: 'bogus' });
+  assert.equal(res.status, 400);
+  assert.match(res.body.error, /Status must be/);
 });
 
 test('POST /api/books stores the spoilers flag and defaults to false', async () => {
@@ -129,6 +141,16 @@ test('GET supports search filtering', async () => {
   assert.equal(res.body.data[0].title, 'Hyperion');
 });
 
+test('GET defaults to 50 books per page when no limit is given', async () => {
+  for (let i = 0; i < 55; i++) {
+    await request(app).post('/api/books').send({ title: `Book ${String(i).padStart(2, '0')}`, author: 'A' });
+  }
+  const res = await request(app).get('/api/books');
+  assert.equal(res.body.data.length, 50);
+  assert.equal(res.body.meta.limit, 50);
+  assert.equal(res.body.meta.total, 55);
+});
+
 test('GET paginates and returns meta', async () => {
   for (let i = 0; i < 30; i++) {
     await request(app).post('/api/books').send({ title: `Book ${String(i).padStart(2, '0')}`, author: 'A' });
@@ -173,16 +195,28 @@ test('PUT updates a book, keeping its id', async () => {
 
   const res = await request(app)
     .put(`/api/books/${id}`)
-    .send({ title: 'New', author: 'B', rating: 4.5, type: 'ebook', dnf: 'on', description: 'edited' });
+    .send({ title: 'New', author: 'B', rating: 4.5, type: 'ebook', status: 'dnf', description: 'edited' });
   assert.equal(res.status, 200);
   assert.equal(res.body.data.id, id);
   assert.equal(res.body.data.title, 'New');
   assert.equal(res.body.data.rating, 4.5);
-  assert.equal(res.body.data.dnf, true);
+  assert.equal(res.body.data.status, 'dnf');
 
   const list = await request(app).get('/api/books');
   assert.equal(list.body.data.length, 1);
   assert.equal(list.body.data[0].title, 'New');
+});
+
+test('PUT can transition a book from reading to read, defaulting the date to today', async () => {
+  const created = await request(app).post('/api/books').send({ title: 'Mid-read', author: 'A', status: 'reading' });
+  assert.equal(created.body.data.status, 'reading');
+  assert.equal(created.body.data.date, '');
+
+  const res = await request(app)
+    .put(`/api/books/${created.body.data.id}`)
+    .send({ title: 'Mid-read', author: 'A', status: 'read' });
+  assert.equal(res.body.data.status, 'read');
+  assert.match(res.body.data.date, /^\d{4}-\d{2}-\d{2}$/);
 });
 
 test('PUT of an unknown id returns 404', async () => {

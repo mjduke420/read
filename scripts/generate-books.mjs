@@ -30,22 +30,34 @@ function randomDate() {
   return new Date(start + Math.random() * (end - start)).toISOString().slice(0, 10);
 }
 
+// ~20% reading, ~15% dnf, ~65% read.
+function randomStatus() {
+  const r = Math.random();
+  if (r < 0.2) return 'reading';
+  if (r < 0.35) return 'dnf';
+  return 'read';
+}
+
 const store = createCsvStore(dataFile);
 const existing = await store.readAll();
 
-const generated = Array.from({ length: count }, (_, i) =>
-  createBook({
+const generated = Array.from({ length: count }, (_, i) => {
+  const status = randomStatus();
+  // Demonstrate the "no mandatory date while reading" behavior: most
+  // in-progress books are generated with no date at all.
+  const date = status === 'reading' && Math.random() < 0.6 ? undefined : randomDate();
+  return createBook({
     title: `${pick(adjectives)} ${pick(nouns)} #${i + 1}`,
     author: `${pick(firstNames)} ${pick(lastNames)}`,
-    date: randomDate(),
+    date,
     rating: pick(ratings),
     type: pick(types),
     challenge: pick(challenges),
-    dnf: Math.random() < 0.25, // ~1 in 4 marked did-not-finish
+    status,
     spoilers: Math.random() < 0.3, // ~3 in 10 contain spoilers
     description: `Stress-test entry ${i + 1}. ${pick(adjectives)} ${pick(nouns).toLowerCase()} meets ${pick(adjectives).toLowerCase()} ${pick(nouns).toLowerCase()} in a tale of ${pick(nouns).toLowerCase()}s.`,
-  }),
-);
+  });
+});
 
 await store.writeAll([...existing, ...generated]);
 console.log(`Added ${count} books (total now ${existing.length + count}) -> ${dataFile}`);
