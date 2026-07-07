@@ -38,27 +38,41 @@ test('updateBook keeps the given id and applies validated fields', () => {
     author: 'A',
     rating: '3.5',
     type: 'ebook',
-    dnf: 'on',
+    status: 'dnf',
   });
   assert.equal(updated.id, 'keep-id');
   assert.equal(updated.title, 'New Title');
   assert.equal(updated.rating, 3.5);
   assert.equal(updated.type, 'ebook');
-  assert.equal(updated.dnf, true);
+  assert.equal(updated.status, 'dnf');
 });
 
 test('updateBook rejects invalid input (missing title)', () => {
   assert.throws(() => updateBook('x', { author: 'A' }), /Title is required/);
 });
 
-test('createBook defaults dnf to false (Read)', () => {
-  assert.equal(createBook({ title: 'X', author: 'Y' }).dnf, false);
+test('createBook defaults status to read', () => {
+  assert.equal(createBook({ title: 'X', author: 'Y' }).status, 'read');
 });
 
-test('createBook coerces checkbox/string truthy values for dnf', () => {
-  assert.equal(createBook({ title: 'X', author: 'Y', dnf: 'on' }).dnf, true);
-  assert.equal(createBook({ title: 'X', author: 'Y', dnf: true }).dnf, true);
-  assert.equal(createBook({ title: 'X', author: 'Y', dnf: 'false' }).dnf, false);
+test('createBook accepts reading and dnf statuses, and rejects invalid ones', () => {
+  assert.equal(createBook({ title: 'X', author: 'Y', status: 'reading' }).status, 'reading');
+  assert.equal(createBook({ title: 'X', author: 'Y', status: 'dnf' }).status, 'dnf');
+  assert.equal(createBook({ title: 'X', author: 'Y', status: ' Read ' }).status, 'read');
+  assert.throws(
+    () => createBook({ title: 'X', author: 'Y', status: 'bogus' }),
+    /Status must be reading, read or dnf/,
+  );
+});
+
+test('createBook leaves the date blank while status is reading (not mandatory)', () => {
+  const book = createBook({ title: 'X', author: 'Y', status: 'reading' });
+  assert.equal(book.date, '');
+});
+
+test('createBook defaults the date to today for read/dnf statuses when omitted', () => {
+  assert.match(createBook({ title: 'X', author: 'Y', status: 'read' }).date, /^\d{4}-\d{2}-\d{2}$/);
+  assert.match(createBook({ title: 'X', author: 'Y', status: 'dnf' }).date, /^\d{4}-\d{2}-\d{2}$/);
 });
 
 test('createBook defaults spoilers to false and coerces truthy values', () => {
@@ -143,13 +157,13 @@ test('sortBooks by type ascending (audiobook, book, ebook)', () => {
   assert.deepEqual(ids, ['2', '3', '1']);
 });
 
-test('sortBooks by dnf puts Read before DNF ascending', () => {
+test('sortBooks by status puts reading, then read, then dnf ascending', () => {
   const items = [
-    { id: 'a', dnf: true },
-    { id: 'b', dnf: false },
-    { id: 'c', dnf: true },
+    { id: 'a', status: 'dnf' },
+    { id: 'b', status: 'read' },
+    { id: 'c', status: 'reading' },
   ];
-  assert.deepEqual(sortBooks(items, 'dnf', 'asc').map((b) => b.id), ['b', 'a', 'c']);
+  assert.deepEqual(sortBooks(items, 'status', 'asc').map((b) => b.id), ['c', 'b', 'a']);
 });
 
 test('sortBooks by spoilers puts spoiler-free first ascending', () => {
@@ -161,9 +175,9 @@ test('sortBooks by spoilers puts spoiler-free first ascending', () => {
 });
 
 const filterSet = [
-  { id: '1', title: 'Dune', author: 'Herbert', date: '2024-01-01', rating: 5, type: 'book', dnf: false, spoilers: true, description: 'desert epic' },
-  { id: '2', title: 'Hyperion', author: 'Simmons', date: '2023-06-01', rating: null, type: 'ebook', dnf: true, spoilers: false, description: 'pilgrims' },
-  { id: '3', title: 'Dune Messiah', author: 'Herbert', date: '2024-09-01', rating: 4, type: 'audiobook', dnf: false, spoilers: false, description: 'sequel' },
+  { id: '1', title: 'Dune', author: 'Herbert', date: '2024-01-01', rating: 5, type: 'book', status: 'read', spoilers: true, description: 'desert epic' },
+  { id: '2', title: 'Hyperion', author: 'Simmons', date: '2023-06-01', rating: null, type: 'ebook', status: 'dnf', spoilers: false, description: 'pilgrims' },
+  { id: '3', title: 'Dune Messiah', author: 'Herbert', date: '2024-09-01', rating: 4, type: 'audiobook', status: 'read', spoilers: false, description: 'sequel' },
 ];
 
 test('filterBooks with no filters returns everything', () => {
@@ -176,12 +190,12 @@ test('filterBooks matches text columns by substring (case-insensitive)', () => {
   assert.deepEqual(filterBooks(filterSet, { author: 'herb' }).map((b) => b.id), ['1', '3']);
 });
 
-test('filterBooks filters by type, date, rating, dnf and spoilers', () => {
+test('filterBooks filters by type, date, rating, status and spoilers', () => {
   assert.deepEqual(filterBooks(filterSet, { type: 'ebook' }).map((b) => b.id), ['2']);
   assert.deepEqual(filterBooks(filterSet, { date: '2024' }).map((b) => b.id), ['1', '3']);
   assert.deepEqual(filterBooks(filterSet, { rating: 'unrated' }).map((b) => b.id), ['2']);
   assert.deepEqual(filterBooks(filterSet, { rating: '4' }).map((b) => b.id), ['3']);
-  assert.deepEqual(filterBooks(filterSet, { dnf: 'dnf' }).map((b) => b.id), ['2']);
+  assert.deepEqual(filterBooks(filterSet, { status: 'dnf' }).map((b) => b.id), ['2']);
   assert.deepEqual(filterBooks(filterSet, { spoilers: 'spoilers' }).map((b) => b.id), ['1']);
   assert.deepEqual(filterBooks(filterSet, { spoilers: 'free' }).map((b) => b.id), ['2', '3']);
 });
@@ -253,8 +267,8 @@ test('paginate clamps page below 1 and bad input to page 1', () => {
 
 test('paginate falls back to the default size when limit is invalid', () => {
   const { data, meta } = paginate(many, { page: 1, limit: 'nope' });
-  assert.equal(meta.limit, 25);
-  assert.equal(data.length, 25);
+  assert.equal(meta.limit, 50);
+  assert.equal(data.length, 50);
 });
 
 test('paginate reports totalPages = 1 for an empty list', () => {

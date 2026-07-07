@@ -49,13 +49,21 @@ export const BookInputSchema = z.object({
   ),
   // Optional free-text tag for reading challenges (e.g. "Book Riot 2026").
   challenge: z.string().trim().max(200).optional().default(''),
-  // "Did not finish" flag. Accepts checkbox/string/boolean truthy forms;
-  // anything else (including missing) means false (Read).
-  dnf: z.preprocess(
-    (v) => v === true || v === 'true' || v === 'on' || v === '1' || v === 'yes',
-    z.boolean(),
+  // Reading status. Missing/blank defaults to 'read'.
+  status: z.preprocess(
+    (v) => {
+      if (typeof v !== 'string') return v;
+      const s = v.trim().toLowerCase();
+      return s === '' ? undefined : s;
+    },
+    z
+      .enum(['reading', 'read', 'dnf'], {
+        errorMap: () => ({ message: 'Status must be reading, read or dnf' }),
+      })
+      .optional()
+      .default('read'),
   ),
-  // "Contains spoilers" flag. Same truthy-coercion as dnf; missing -> false.
+  // "Contains spoilers" flag. Same truthy-coercion as dnf previously used; missing -> false.
   spoilers: z.preprocess(
     (v) => v === true || v === 'true' || v === 'on' || v === '1' || v === 'yes',
     z.boolean(),
@@ -69,14 +77,18 @@ export const BookInputSchema = z.object({
  */
 export function buildBookFields(input) {
   const parsed = BookInputSchema.parse(input ?? {});
+  const status = parsed.status ?? 'read';
   return {
     title: parsed.title,
     author: parsed.author,
-    date: parsed.date && parsed.date !== '' ? parsed.date : today(),
+    // Date represents when the book was finished, so it isn't mandatory while
+    // still 'reading' — leave it blank rather than defaulting to today. Once
+    // the status moves to 'read' or 'dnf', a blank date defaults to today.
+    date: parsed.date && parsed.date !== '' ? parsed.date : status === 'reading' ? '' : today(),
     rating: parsed.rating ?? null,
     type: parsed.type ?? 'book',
     challenge: parsed.challenge ?? '',
-    dnf: parsed.dnf ?? false,
+    status,
     spoilers: parsed.spoilers ?? false,
     description: parsed.description ?? '',
   };
@@ -133,10 +145,8 @@ function matchesFilter(book, key, rawValue) {
     case 'rating':
       if (value === 'unrated') return book.rating == null;
       return book.rating != null && book.rating === Number(value);
-    case 'dnf':
-      if (value === 'read') return book.dnf === false;
-      if (value === 'dnf') return book.dnf === true;
-      return true;
+    case 'status':
+      return book.status === value;
     case 'spoilers':
       if (value === 'free') return book.spoilers === false;
       if (value === 'spoilers') return book.spoilers === true;
@@ -146,7 +156,10 @@ function matchesFilter(book, key, rawValue) {
   }
 }
 
-export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type', 'dnf', 'spoilers', 'challenge']);
+export const SORT_KEYS = new Set(['title', 'author', 'date', 'rating', 'type', 'status', 'spoilers', 'challenge']);
+
+// Ascending sort order: in-progress, then finished, then abandoned.
+const STATUS_ORDER = { reading: 0, read: 1, dnf: 2 };
 
 /** Returns a new sorted array; never mutates the input. */
 export function sortBooks(books, sortKey, order = 'asc') {
@@ -160,9 +173,8 @@ function compare(a, b, key) {
     // Unrated books sort below any rated book.
     return (a.rating ?? -1) - (b.rating ?? -1);
   }
-  if (key === 'dnf') {
-    // Read (false) before DNF (true) when ascending.
-    return (a.dnf ? 1 : 0) - (b.dnf ? 1 : 0);
+  if (key === 'status') {
+    return (STATUS_ORDER[a.status] ?? 1) - (STATUS_ORDER[b.status] ?? 1);
   }
   if (key === 'spoilers') {
     // Spoiler-free (false) before spoilers (true) when ascending.
@@ -181,7 +193,7 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export const DEFAULT_PAGE_SIZE = 25;
+export const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
 
 /**

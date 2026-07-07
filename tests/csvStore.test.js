@@ -23,7 +23,7 @@ test('readAll returns [] when the file does not exist', async () => {
 
 test('writeAll then readAll round-trips records', async () => {
   const books = [
-    { id: '1', title: 'A', author: 'B', date: '2024-01-01', rating: 4, type: 'ebook', challenge: 'Book Riot 2026', dnf: true, spoilers: true, description: 'hi' },
+    { id: '1', title: 'A', author: 'B', date: '2024-01-01', rating: 4, type: 'ebook', challenge: 'Book Riot 2026', status: 'dnf', spoilers: true, description: 'hi' },
   ];
   await store.writeAll(books);
   const read = await store.readAll();
@@ -31,14 +31,38 @@ test('writeAll then readAll round-trips records', async () => {
   assert.deepEqual(read[0], books[0]);
 });
 
-test('rows without dnf/spoilers/challenge columns default to empty/false', async () => {
+test('rows without status/spoilers/challenge columns default to read/empty/false', async () => {
   await store.writeAll([
     { id: '1', title: 'A', author: 'B', date: '2024-01-01', rating: 4, type: 'book', description: 'hi' },
   ]);
   const read = await store.readAll();
-  assert.equal(read[0].dnf, false);
+  assert.equal(read[0].status, 'read');
   assert.equal(read[0].spoilers, false);
   assert.equal(read[0].challenge, '');
+});
+
+test('a legacy dnf column (no status column) maps to status', async () => {
+  await writeFile(
+    join(dir, 'books.csv'),
+    'id,title,author,date,rating,type,dnf,description\n' +
+      '1,Finished,A,2024-01-01,4,book,false,desc\n' +
+      '2,Abandoned,B,2024-01-02,2,book,true,desc\n',
+    'utf8',
+  );
+  const read = await store.readAll();
+  assert.equal(read[0].status, 'read');
+  assert.equal(read[1].status, 'dnf');
+});
+
+test('a valid status column takes priority over a legacy dnf column', async () => {
+  await writeFile(
+    join(dir, 'books.csv'),
+    'id,title,author,date,rating,type,status,dnf,description\n' +
+      '1,Mid-read,A,,4,book,reading,false,desc\n',
+    'utf8',
+  );
+  const read = await store.readAll();
+  assert.equal(read[0].status, 'reading');
 });
 
 test('preserves commas, quotes and newlines in the description', async () => {

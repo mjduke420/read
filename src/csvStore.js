@@ -5,11 +5,16 @@ import { stringify } from 'csv-stringify/sync';
 
 // Canonical column order persisted to disk. `id` is added on top of the
 // user-facing fields so books can be addressed for delete/edit later.
-export const COLUMNS = ['id', 'title', 'author', 'date', 'rating', 'type', 'challenge', 'dnf', 'spoilers', 'description'];
+export const COLUMNS = ['id', 'title', 'author', 'date', 'rating', 'type', 'challenge', 'status', 'spoilers', 'description'];
 
 // Allowed media types. Rows missing/invalid `type` fall back to 'book' so
 // CSV files written before this column existed remain valid.
 const TYPES = ['book', 'ebook', 'audiobook'];
+
+// Allowed reading statuses. Rows missing/invalid `status` fall back to the
+// legacy boolean `dnf` column (true -> 'dnf', anything else -> 'read') so
+// CSV files written before this column existed remain valid.
+const STATUSES = ['reading', 'read', 'dnf'];
 
 /**
  * Repository for the books CSV file.
@@ -76,8 +81,15 @@ export function createCsvStore(filePath) {
 function normalizeRecord(rec) {
   const rating = rec.rating == null || String(rec.rating).trim() === '' ? null : Number(rec.rating);
   const type = String(rec.type ?? '').trim().toLowerCase();
-  // Rows written before these columns existed default to false.
-  const dnf = String(rec.dnf ?? '').trim().toLowerCase();
+  const rawStatus = String(rec.status ?? '').trim().toLowerCase();
+  // Rows written before the `status` column existed only have the legacy
+  // boolean `dnf` column; anything else (including missing) defaults to 'read'.
+  const legacyDnf = String(rec.dnf ?? '').trim().toLowerCase();
+  const status = STATUSES.includes(rawStatus)
+    ? rawStatus
+    : legacyDnf === 'true' || legacyDnf === '1' || legacyDnf === 'yes'
+      ? 'dnf'
+      : 'read';
   const spoilers = String(rec.spoilers ?? '').trim().toLowerCase();
   return {
     id: rec.id ?? '',
@@ -87,7 +99,7 @@ function normalizeRecord(rec) {
     rating: Number.isFinite(rating) ? rating : null,
     type: TYPES.includes(type) ? type : 'book',
     challenge: rec.challenge ?? '',
-    dnf: dnf === 'true' || dnf === '1' || dnf === 'yes',
+    status,
     spoilers: spoilers === 'true' || spoilers === '1' || spoilers === 'yes',
     description: rec.description ?? '',
   };

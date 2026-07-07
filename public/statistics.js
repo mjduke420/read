@@ -65,6 +65,7 @@ function renderCards(stats) {
     card(stats.averageRating || '—', `Avg rating (${stats.ratedCount} rated)`, 'amber'),
     card(stats.distinctAuthors, 'Distinct authors', 'cyan'),
     card(`${pct(stats.readCount)}%`, `Finished (${stats.readCount})`, 'green'),
+    card(stats.readingCount, 'Currently reading', 'cyan'),
     card(`${pct(stats.dnfCount)}%`, `Did not finish (${stats.dnfCount})`, 'amber'),
     card(stats.spoilerCount, 'Marked spoilers', 'red'),
     card(stats.mostReadYear ?? '—', 'Most-read year', 'violet'),

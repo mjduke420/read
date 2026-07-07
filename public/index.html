@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=23" />
+    <link rel="stylesheet" href="styles.css?v=24" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
   </head>
   <body>
@@ -90,13 +90,13 @@
               <button type="button" class="clear-rating-btn" id="clear-rating" title="Clear Rating" aria-label="Clear rating">✕</button>
             </div>
           </label>
-          <label class="toggle-field">
+          <label>
             Status
-            <span class="toggle-row">
-              <input type="checkbox" name="dnf" id="dnf-toggle" class="toggle-input" />
-              <span class="toggle-switch" aria-hidden="true"></span>
-              <span class="toggle-state" id="dnf-state">Read</span>
-            </span>
+            <select name="status" id="status-select">
+              <option value="reading">📖 Reading</option>
+              <option value="read" selected>✅ Read</option>
+              <option value="dnf">🚫 DNF</option>
+            </select>
           </label>
           <label class="toggle-field">
             Spoilers
@@ -149,7 +149,7 @@
                 <th data-key="challenge" scope="col">Challenge <span class="arrow"></span></th>
                 <th data-key="date" scope="col">Date <span class="arrow"></span></th>
                 <th data-key="rating" scope="col">Rating <span class="arrow"></span></th>
-                <th data-key="dnf" scope="col">Status <span class="arrow"></span></th>
+                <th data-key="status" scope="col">Status <span class="arrow"></span></th>
                 <th data-key="spoilers" scope="col">Spoilers <span class="arrow"></span></th>
                 <th scope="col">Description</th>
                 <th scope="col"><span class="visually-hidden">Actions</span></th>
@@ -184,8 +184,9 @@
                   </select>
                 </td>
                 <td>
-                  <select class="filter-input" data-filter="dnf" aria-label="Filter by status">
+                  <select class="filter-input" data-filter="status" aria-label="Filter by status">
                     <option value="">All</option>
+                    <option value="reading">Reading</option>
                     <option value="read">Read</option>
                     <option value="dnf">DNF</option>
                   </select>
@@ -284,13 +285,13 @@
             <option value="5">★★★★★ (5)</option>
           </select>
         </label>
-        <label class="toggle-field">
+        <label>
           Status
-          <span class="toggle-row">
-            <input type="checkbox" name="dnf" id="edit-dnf" class="toggle-input" />
-            <span class="toggle-switch" aria-hidden="true"></span>
-            <span class="toggle-state" id="edit-dnf-state">Read</span>
-          </span>
+          <select name="status" id="edit-status">
+            <option value="reading">📖 Reading</option>
+            <option value="read">✅ Read</option>
+            <option value="dnf">🚫 DNF</option>
+          </select>
         </label>
         <label class="toggle-field">
           Spoilers
@@ -312,6 +313,6 @@
       </form>
     </div>
 
-    <script src="app.js?v=21" type="module"></script>
+    <script src="app.js?v=24" type="module"></script>
   </body>
 </html>

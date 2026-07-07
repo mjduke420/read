@@ -18,8 +18,6 @@ const els = {
   detailStatus: document.querySelector('#detail .detail-status'),
   detailChallenge: document.querySelector('#detail .detail-challenge'),
   detailDesc: document.querySelector('#detail .detail-desc'),
-  dnfToggle: document.getElementById('dnf-toggle'),
-  dnfState: document.getElementById('dnf-state'),
   detailClose: document.querySelector('#detail .detail-close'),
   detailDelete: document.querySelector('#detail .detail-delete'),
   detailView: document.querySelector('#detail .detail-view'),
@@ -27,8 +25,6 @@ const els = {
   detailEditForm: document.getElementById('detail-edit-form'),
   detailCancel: document.querySelector('#detail .detail-cancel'),
   detailEditMsg: document.querySelector('#detail .detail-edit-msg'),
-  editDnf: document.getElementById('edit-dnf'),
-  editDnfState: document.getElementById('edit-dnf-state'),
   btnListView: document.getElementById('btn-list-view'),
   btnGridView: document.getElementById('btn-grid-view'),
   tableWrap: document.querySelector('.table-wrap'),
@@ -51,7 +47,7 @@ const els = {
 };
 
 // Books per page (server-side pagination keeps the grid from scrolling forever).
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 50;
 
 // On narrow screens, long cell values are truncated in the grid; the full
 // text is still available in the detail card when a row is selected.
@@ -89,11 +85,14 @@ function starsSpan(rating) {
   return span;
 }
 
-// Read / DNF status pill. Returns a fresh element.
-function statusBadge(dnf) {
+const STATUS_LABELS = { reading: 'Reading', read: 'Read', dnf: 'DNF' };
+
+// Reading / Read / DNF status pill. Returns a fresh element.
+function statusBadge(status) {
+  const key = STATUS_LABELS[status] ? status : 'read';
   const span = document.createElement('span');
-  span.className = `status-badge ${dnf ? 'status-dnf' : 'status-read'}`;
-  span.textContent = dnf ? 'DNF' : 'Read';
+  span.className = `status-badge status-${key}`;
+  span.textContent = STATUS_LABELS[key];
   return span;
 }
 
@@ -227,7 +226,7 @@ function row(book) {
     rating.appendChild(starsSpan(book.rating));
   }
 
-  tr.querySelector('.col-status').appendChild(statusBadge(book.dnf));
+  tr.querySelector('.col-status').appendChild(statusBadge(book.status));
   tr.querySelector('.col-spoilers').appendChild(spoilersBadge(book.spoilers));
 
   const descCell = tr.querySelector('.col-desc');
@@ -285,7 +284,7 @@ function renderDetail(book) {
   }
 
   els.detailStatus.innerHTML = '';
-  els.detailStatus.appendChild(statusBadge(book.dnf));
+  els.detailStatus.appendChild(statusBadge(book.status));
 
   els.detailSpoilers.innerHTML = '';
   els.detailSpoilers.appendChild(spoilersBadge(book.spoilers));
@@ -351,8 +350,7 @@ function openEdit() {
   f.elements.type.value = currentBook.type || 'book';
   f.elements.challenge.value = currentBook.challenge || '';
   f.elements.rating.value = currentBook.rating == null ? '' : String(currentBook.rating);
-  els.editDnf.checked = !!currentBook.dnf;
-  els.editDnfState.textContent = currentBook.dnf ? 'DNF' : 'Read';
+  f.elements.status.value = currentBook.status || 'read';
   els.editSpoilers.checked = !!currentBook.spoilers;
   els.editSpoilersState.textContent = currentBook.spoilers ? 'Spoilers' : 'Spoiler-free';
   f.elements.description.value = currentBook.description || '';
@@ -370,9 +368,6 @@ function cancelEdit() {
 
 els.detailEdit.addEventListener('click', openEdit);
 els.detailCancel.addEventListener('click', cancelEdit);
-els.editDnf.addEventListener('change', () => {
-  els.editDnfState.textContent = els.editDnf.checked ? 'DNF' : 'Read';
-});
 els.editSpoilers.addEventListener('change', () => {
   els.editSpoilersState.textContent = els.editSpoilers.checked ? 'Spoilers' : 'Spoiler-free';
 });
@@ -488,20 +483,15 @@ els.clearRatingBtn.addEventListener('click', () => {
   updateStarWidget('');
 });
 
-// Add-form toggles: reflect on/off state in their labels.
-function updateDnfLabel() {
-  els.dnfState.textContent = els.dnfToggle.checked ? 'DNF' : 'Read';
-}
+// Add-form toggle: reflect on/off state in its label.
 function updateSpoilersLabel() {
   els.spoilersState.textContent = els.spoilersToggle.checked ? 'Spoilers' : 'Spoiler-free';
 }
-els.dnfToggle.addEventListener('change', updateDnfLabel);
 els.spoilersToggle.addEventListener('change', updateSpoilersLabel);
 
 els.form.addEventListener('reset', () => {
   setTimeout(() => {
     updateStarWidget('');
-    updateDnfLabel();
     updateSpoilersLabel();
   }, 0);
 });
